@@ -1,3 +1,5 @@
+![photo-1527374071603-76de89807336](https://github.com/user-attachments/assets/651dc71a-08d6-46bb-9fe2-803675398527)
+
 # Projeto integrador
 
 ---
