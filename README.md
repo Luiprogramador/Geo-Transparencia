@@ -328,10 +328,10 @@ Embora não sejam "empresas" no sentido comercial estrito, a assinatura de um di
 
 ## Modelo Banco de dados
 
-![Captura de tela 2026-04-06 101058.png](Captura_de_tela_2026-04-06_101058.png)
+![Captura_de_tela_2026-04-06_101058](https://github.com/user-attachments/assets/bbf47429-22fc-4a4a-af81-f4a3331a2603)
 
 [modelo_conceitual.brM3](modelo_conceitual.brm3)
 
-![Captura de tela 2026-04-06 104944.png](Captura_de_tela_2026-04-06_104944.png)
+![Captura_de_tela_2026-04-06_104944](https://github.com/user-attachments/assets/60acc7d9-1fc1-4cc4-8ab3-637dd54dad78)
 
 [modelo_logico.brM3](modelo_logico.brm3)
