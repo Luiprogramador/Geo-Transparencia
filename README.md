@@ -214,11 +214,12 @@ Agora a parte que ajuda MUITO na apresentação: backlog.
 
 tasks:
 
-- definir estrutura do projeto
-- organizar datasets coletados
-- identificar inconsistências principais
-- definir modelo de dados unificado
-- criar banco SQLite inicial
+- definir estrutura do projeto - FEITO
+- organizar datasets coletados - Felipe Goes
+- identificar inconsistências principais - Felipe Goes
+- definir modelo de dados unificado - Gustavo (fEITO)
+- criar banco SQLite inicial - Felipe Goes
+- coletar mais datasets contendo outros vetores relaciondaos a região - Germano
 
 ---
 
