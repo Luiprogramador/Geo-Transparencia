@@ -212,7 +212,7 @@ Agora a parte que ajuda MUITO na apresentação: backlog.
 
 ### Sprint 1 — Base do projeto
 
-tasks:
+tasks: Data(27/04)
 
 - definir estrutura do projeto - FEITO
 - organizar datasets coletados - Felipe Goes
