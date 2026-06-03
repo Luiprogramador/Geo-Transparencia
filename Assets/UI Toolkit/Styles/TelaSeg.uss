@@ -1,0 +1,315 @@
+.root {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    flex-direction: column;
+    background-color: #0A0F1C;
+    padding: 16px;
+}
+
+Label {
+    white-space: normal;
+}
+
+.topbar {
+    flex-direction: row;
+    align-items: center;
+    background-color: #111827;
+    border-width: 1px;
+    border-color: #1F2A44;
+    border-radius: 14px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+}
+
+.brandTitle {
+    color: white;
+    font-size: 18px;
+    -unity-font-style: bold;
+    margin-right: 8px;
+}
+
+.brandSub {
+    color: #8B9DC3;
+    font-size: 12px;
+    flex-grow: 1;
+}
+
+.navActive {
+    color: #4ADE80;
+    font-size: 14px;
+    -unity-font-style: bold;
+    margin-right: 20px;
+}
+
+.dateText {
+    color: #B9C7DB;
+    font-size: 12px;
+    background-color: #0B1120;
+    border-width: 1px;
+    border-color: #2A3A5C;
+    border-radius: 10px;
+    padding: 4px 10px;
+}
+
+.contentRow {
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+.filtros {
+    width: 280px;
+    background-color: #111827;
+    border-width: 1px;
+    border-color: #1F2A44;
+    border-radius: 16px;
+    padding: 16px;
+    margin-right: 16px;
+    overflow: scroll;
+}
+
+.mapa {
+    flex-grow: 1;
+    background-color: #111827;
+    border-width: 1px;
+    border-color: #1F2A44;
+    border-radius: 16px;
+    padding: 16px;
+    margin-right: 16px;
+    flex-direction: column;
+}
+
+.resumo {
+    width: 260px;
+    background-color: #111827;
+    border-width: 1px;
+    border-color: #1F2A44;
+    border-radius: 16px;
+    padding: 16px;
+    overflow: scroll;
+}
+
+.titulo {
+    color: white;
+    font-size: 20px;
+    -unity-font-style: bold;
+    margin-bottom: 12px;
+}
+
+.subtitulo {
+    color: #A0B0D0;
+    font-size: 14px;
+    -unity-font-style: bold;
+    margin-top: 16px;
+    margin-bottom: 8px;
+}
+
+.textoSec {
+    color: #6B7A99;
+    font-size: 12px;
+}
+
+.btnFiltro {
+    background-color: #0B1120;
+    border-width: 1px;
+    border-color: #2A3A5C;
+    border-radius: 10px;
+    color: #E2E8F0;
+    font-size: 13px;
+    padding: 8px;
+    margin: 8px 0;
+    -unity-text-align: middle-left;
+}
+
+.popup {
+    position: absolute;
+    background-color: #1A253C;
+    border-width: 1px;
+    border-color: #2A3A5C;
+    border-radius: 12px;
+    padding: 12px;
+    width: 260px;
+}
+
+.popupHeader {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.popupTitle {
+    color: white;
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+.closeBtn {
+    background-color: transparent;
+    color: #B9C7DB;
+    font-size: 16px;
+    border-width: 0;
+}
+
+.crimeList {
+    max-height: 200px;
+    margin-bottom: 12px;
+}
+
+.crimeList Toggle {
+    color: #E2E8F0;
+    font-size: 12px;
+    margin: 2px 0;
+}
+
+.popupFooter {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.selectedCountLabel {
+    color: #8B9DC3;
+    font-size: 11px;
+}
+
+.popupButton {
+    background-color: #2A3A5C;
+    color: white;
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 11px;
+}
+
+.popupButtonPrimary {
+    background-color: #4ADE80;
+    color: #0A0F1C;
+}
+
+.dataRange {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.dateField {
+    flex-grow: 1;
+    background-color: #0B1120;
+    border-width: 1px;
+    border-color: #2A3A5C;
+    border-radius: 8px;
+    padding: 4px;
+    margin-right: 4px;
+    color: #E2E8F0;
+}
+
+.btnAplicar {
+    background-color: #2A3A5C;
+    color: white;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 11px;
+}
+
+.cardLegend {
+    background-color: #0F1622;
+    border-width: 1px;
+    border-color: #1F2A44;
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 20px;
+}
+
+.heatGradient {
+    height: 20px;
+    margin: 8px 0;
+    border-radius: 10px;
+    flex-direction: row; /* gradiente horizontal */
+}
+
+.legendaLinha {
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.mapContainer {
+    flex-grow: 1;
+    background-color: #0B1120;
+    border-radius: 16px;
+    border-width: 1px;
+    border-color: #1F2A44;
+    padding: 8px;
+    position: relative;
+}
+
+.mapViewport {
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.mapaBrasil {
+    width: 100%;
+    height: 100%;
+}
+
+.stateCard {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    background-color: rgba(11, 17, 32, 0.9);
+    border-radius: 16px;
+    border-width: 1px;
+    border-color: #2A3A5C;
+    padding: 12px;
+    width: 240px;
+}
+
+.stateHead {
+    color: #4ADE80;
+    font-size: 10px;
+}
+
+.stateTitle {
+    color: white;
+    font-size: 20px;
+    -unity-font-style: bold;
+    margin: 4px 0 8px;
+}
+
+.stateRow {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 4px;
+}
+
+.riskBadge {
+    color: #F97316;
+    -unity-font-style: bold;
+}
+
+.stateValue {
+    color: white;
+    font-size: 20px;
+    -unity-font-style: bold;
+}
+
+.kpiCard {
+    background-color: #0B1120;
+    border-width: 1px;
+    border-color: #1F2A44;
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.valor {
+    color: white;
+    font-size: 28px;
+    -unity-font-style: bold;
+    margin-top: 4px;
+}

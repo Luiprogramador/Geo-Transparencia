@@ -1,0 +1,85 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Template name="MapaBrasil" src="project://database/Assets/UI%20Toolkit/TelaEstados.uxml?fileID=9197481963319205126&amp;guid=c62b2133e7f91de49bcaf5f5d7d25276&amp;type=3#TelaEstados"/>
+    <Style src="project://database/Assets/UI%20Toolkit/Styles/TelaSeg.uss"/>
+
+    <ui:VisualElement name="Root" class="root">
+        <ui:VisualElement class="topbar">
+            <ui:Label text="Transparência Visual" class="brandTitle"/>
+            <ui:Label text="de Dados Públicos" class="brandSub"/>
+            <ui:Label text="Segurança Pública" class="navActive"/>
+            <ui:Label text="2025-2026" class="dateText"/>
+        </ui:VisualElement>
+
+        <ui:VisualElement class="contentRow">
+            <ui:VisualElement class="filtros">
+                <ui:Label text="FILTROS" class="titulo"/>
+                <ui:Label text="Refinar os dados" class="textoSec"/>
+
+                <ui:Button name="CrimeButton" text="Tipo de Crime (todos)" class="btnFiltro"/>
+                <ui:VisualElement name="CrimePopup" class="popup" style="display: none;">
+                    <ui:VisualElement class="popupHeader">
+                        <ui:Label text="Selecione os crimes" class="popupTitle"/>
+                        <ui:Button name="ClosePopupBtn" text="✕" class="closeBtn"/>
+                    </ui:VisualElement>
+                    <ui:ScrollView name="CrimeListContainer" class="crimeList"/>
+                    <ui:VisualElement class="popupFooter">
+                        <ui:Label name="SelectedCountLabel" text="0 selecionados" class="selectedCountLabel"/>
+                        <ui:Button name="ClearBtn" text="Limpar" class="popupButton"/>
+                        <ui:Button name="ApplyBtn" text="Aplicar" class="popupButton popupButtonPrimary"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:Label text="Período (opcional)" class="subtitulo"/>
+                <ui:VisualElement class="dataRange">
+                    <ui:TextField name="DataInicio" placeholder="dd/mm/aaaa" class="dateField"/>
+                    <ui:TextField name="DataFim" placeholder="dd/mm/aaaa" class="dateField"/>
+                    <ui:Button name="AplicarDataBtn" text="Aplicar" class="btnAplicar"/>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="cardLegend">
+                    <ui:Label text="LEGENDA DE RISCO" class="subtitulo"/>
+                    <ui:Label text="Quanto mais quente, maior o risco." class="textoSec"/>
+                    <ui:VisualElement name="HeatGradient" class="heatGradient"/>
+                    <ui:VisualElement class="legendaLinha">
+                        <ui:Label text="Baixo" class="textoSec"/>
+                        <ui:Label text="Médio" class="textoSec"/>
+                        <ui:Label text="Alto" class="textoSec"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="mapa">
+                <ui:Label text="MAPA DE CALOR — BRASIL" class="titulo"/>
+                <ui:VisualElement class="mapContainer">
+                    <ui:VisualElement class="mapViewport">
+                        <ui:Instance template="MapaBrasil" name="Mapa" class="mapaBrasil"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="StateDetail" class="stateCard">
+                        <ui:Label text="ESTADO SELECIONADO" class="stateHead"/>
+                        <ui:Label text="Nenhum" name="stateTitle" class="stateTitle"/>
+                        <ui:VisualElement class="stateRow">
+                            <ui:Label text="Risco:" class="textoSec"/>
+                            <ui:Label text="—" name="riskBadge" class="riskBadge"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="stateRow">
+                            <ui:Label text="Ocorrências:" class="textoSec"/>
+                            <ui:Label text="0" name="stateValue" class="stateValue"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="resumo">
+                <ui:Label text="RESUMO GERAL" class="titulo"/>
+                <ui:VisualElement class="kpiCard">
+                    <ui:Label text="CRIMES REGISTRADOS" class="textoSec"/>
+                    <ui:Label name="totalCrimesLabel" text="0" class="valor"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="kpiCard">
+                    <ui:Label text="MAIOR OCORRÊNCIA" class="textoSec"/>
+                    <ui:Label name="topCrimeLabel" text="-" class="valor"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
