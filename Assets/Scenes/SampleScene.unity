@@ -430,6 +430,7 @@ GameObject:
   - component: {fileID: 2049838731}
   - component: {fileID: 2049838730}
   - component: {fileID: 2049838732}
+  - component: {fileID: 2049838733}
   m_Layer: 5
   m_Name: UIDocument
   m_TagString: Untagged
@@ -489,6 +490,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TelaSegInitializer
   supabaseRestUrl: https://xoixhsvipnykrrvscmet.supabase.co/rest/v1/
   supabasePublishableKey: sb_publishable_E53U7mwhkIpOs_e8-R6eyQ_h2eEEn5b
+  dfUxml: {fileID: 0}
+--- !u!114 &2049838733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2049838729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99c45f592979ce54d9c1ad9e01169814, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MapClickController
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

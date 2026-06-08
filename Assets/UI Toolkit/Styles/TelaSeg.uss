@@ -1,4 +1,5 @@
 .root {
+    background-color: red;
     position: absolute;
     left: 0;
     right: 0;
@@ -67,7 +68,6 @@ Label {
     border-radius: 16px;
     padding: 16px;
     margin-right: 16px;
-    overflow: scroll;
 }
 
 .mapa {
@@ -88,7 +88,6 @@ Label {
     border-color: #1F2A44;
     border-radius: 16px;
     padding: 16px;
-    overflow: scroll;
 }
 
 .titulo {
@@ -125,13 +124,21 @@ Label {
 
 .popup {
     position: absolute;
+    top: 100px;
+    left: 40px;
     background-color: #1A253C;
     border-width: 1px;
     border-color: #2A3A5C;
     border-radius: 12px;
     padding: 12px;
-    width: 260px;
+    width: 340px;
+    max-height: 460px;
+    flex-direction: column;
+    overflow: hidden;
 }
+
+
+
 
 .popupHeader {
     flex-direction: row;
@@ -154,22 +161,98 @@ Label {
 }
 
 .crimeList {
-    max-height: 200px;
+    height: 300px;
     margin-bottom: 12px;
+    flex-shrink: 0;
+    padding-right: 12px;  
 }
 
+
+
+
 .crimeList Toggle {
-    color: #E2E8F0;
-    font-size: 12px;
-    margin: 2px 0;
+    position: relative;
+    width: 100%;
+    min-height: 44px;
+    margin: 3px 0;
+    padding: 8px 50px 8px 4px;
+    align-items: center;   
 }
+
+
+
+
+.crimeList Toggle Label {
+    color: #E2E8F0;
+    font-size: 14px;
+    white-space: normal;
+    flex-grow: 1;
+    flex-shrink: 1;
+    max-width: 240px;
+}
+
+
+.crimeList Toggle > VisualElement {
+    position: absolute;
+    right: 30px;
+    top: 50%;
+    translate: 0 -50%;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+.crimeList Toggle .unity-toggle__checkmark {
+    width: 24px;
+    height: 24px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-position-x: center;
+    background-position-y: center;
+    background-repeat: no-repeat;
+}
+
 
 .popupFooter {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
     margin-top: 8px;
+    flex-shrink: 0;
 }
+
+
+/* Largura total do scroller */
+.crimeList .unity-scroller--vertical {
+    width: 6px;
+}
+
+/* O TRILHO de fundo (esse cinzão feio) - deixa transparente */
+.crimeList .unity-scroller--vertical .unity-base-slider {
+    background-color: transparent;
+}
+
+.crimeList .unity-scroller--vertical .unity-base-slider__tracker {
+    background-color: transparent;
+    border-width: 0;
+}
+
+.crimeList .unity-scroller--vertical #unity-dragger {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+    width: 6px;
+    border-width: 0;
+    margin-left: 0;
+}
+
+
+/* Esconde as setinhas */
+.crimeList .unity-scroller__low-button,
+.crimeList .unity-scroller__high-button {
+    display: none;
+}
+
+
 
 .selectedCountLabel {
     color: #8B9DC3;
@@ -180,13 +263,15 @@ Label {
     background-color: #2A3A5C;
     color: white;
     border-radius: 8px;
-    padding: 4px 12px;
-    font-size: 11px;
+    padding: 7px 16px;  
+    font-size: 12px;    
 }
 
+
 .popupButtonPrimary {
-    background-color: #4ADE80;
-    color: #0A0F1C;
+    background-color: #22C55E;  
+    color: #052e16;           
+    -unity-font-style: bold;     
 }
 
 .dataRange {
@@ -195,16 +280,65 @@ Label {
     margin-bottom: 8px;
 }
 
+
+
+
+/* Container que coloca os campos LADO A LADO */
+.dateRow {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+/* Cada campo de data */
 .dateField {
-    flex-grow: 1;
     background-color: #0B1120;
     border-width: 1px;
     border-color: #2A3A5C;
     border-radius: 8px;
-    padding: 4px;
-    margin-right: 4px;
-    color: #E2E8F0;
+    height: 36px;
+    flex-grow: 1;
+    margin-right: 8px;
 }
+
+/* Garante que o cursor pisque e o campo seja clicável */
+.dateField .unity-base-text-field__input {
+    background-color: transparent;
+    border-width: 0;
+    color: #E2E8F0;
+    font-size: 14px;
+    -unity-text-align: middle-center;
+    cursor: text;
+}
+
+/* Borda destacada ao focar (ajuda a ver que tá ativo) */
+.dateField:focus {
+    border-color: #4ADE80;
+}
+
+.anoDropdown {
+    width: 110px;
+    min-width: 110px;
+    flex-shrink: 0;        /* ⬅️ impede o campo de encolher na linha */
+}
+
+.anoDropdown .unity-base-popup-field__input {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    color: rgb(255, 255, 255);
+    white-space: nowrap;
+    padding-left: 4px;
+    padding-right: 4px;    /* ⬅️ voltei pra pouco padding */
+}
+
+.anoDropdown .unity-base-popup-field__arrow {
+    -unity-background-image-tint-color: rgb(255, 255, 255);
+}
+
+
+
+
+
 
 .btnAplicar {
     background-color: #2A3A5C;
@@ -227,7 +361,7 @@ Label {
     height: 20px;
     margin: 8px 0;
     border-radius: 10px;
-    flex-direction: row; /* gradiente horizontal */
+    flex-direction: row;
 }
 
 .legendaLinha {

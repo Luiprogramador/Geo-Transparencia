@@ -1,0 +1,43 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="MapaDF" style="flex-grow: 1; background-color: rgb(255, 255, 255); padding: 20px; display: none;">
+        
+        <ui:Label text="Distrito Federal" style="font-size: 28px; -unity-font-style: bold; -unity-text-align: middle-center; margin-bottom: 20px; color: rgb(20, 20, 20);" />
+
+        <ui:VisualElement name="GradeRAs" style="flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center;">
+            <ui:Button text="Plano Piloto" name="PlanoPiloto" class="ra-btn" />
+            <ui:Button text="Gama" name="Gama" class="ra-btn" />
+            <ui:Button text="Taguatinga" name="Taguatinga" class="ra-btn" />
+            <ui:Button text="Brazlândia" name="Brazlandia" class="ra-btn" />
+            <ui:Button text="Sobradinho" name="Sobradinho" class="ra-btn" />
+            <ui:Button text="Planaltina" name="Planaltina" class="ra-btn" />
+            <ui:Button text="Paranoá" name="Paranoa" class="ra-btn" />
+            <ui:Button text="Núcleo Bandeirante" name="NucleoBandeirante" class="ra-btn" />
+            <ui:Button text="Ceilândia" name="Ceilandia" class="ra-btn" />
+            <ui:Button text="Guará" name="Guara" class="ra-btn" />
+            <ui:Button text="Cruzeiro" name="Cruzeiro" class="ra-btn" />
+            <ui:Button text="Samambaia" name="Samambaia" class="ra-btn" />
+            <ui:Button text="Santa Maria" name="SantaMaria" class="ra-btn" />
+            <ui:Button text="São Sebastião" name="SaoSebastiao" class="ra-btn" />
+            <ui:Button text="Recanto das Emas" name="RecantoDasEmas" class="ra-btn" />
+            <ui:Button text="Lago Sul" name="LagoSul" class="ra-btn" />
+            <ui:Button text="Riacho Fundo" name="RiachoFundo" class="ra-btn" />
+            <ui:Button text="Lago Norte" name="LagoNorte" class="ra-btn" />
+            <ui:Button text="Candangolândia" name="Candangolandia" class="ra-btn" />
+            <ui:Button text="Águas Claras" name="AguasClaras" class="ra-btn" />
+            <ui:Button text="Riacho Fundo II" name="RiachoFundoII" class="ra-btn" />
+            <ui:Button text="Sudoeste/Octogonal" name="SudoesteOctogonal" class="ra-btn" />
+            <ui:Button text="Varjão" name="Varjao" class="ra-btn" />
+            <ui:Button text="Park Way" name="ParkWay" class="ra-btn" />
+            <ui:Button text="SCIA" name="SCIA" class="ra-btn" />
+            <ui:Button text="Sobradinho II" name="SobradinhoII" class="ra-btn" />
+            <ui:Button text="Jardim Botânico" name="JardimBotanico" class="ra-btn" />
+            <ui:Button text="Itapoã" name="Itapoa" class="ra-btn" />
+            <ui:Button text="SIA" name="SIA" class="ra-btn" />
+            <ui:Button text="Vicente Pires" name="VicentePires" class="ra-btn" />
+            <ui:Button text="Fercal" name="Fercal" class="ra-btn" />
+            <ui:Button text="Sol Nascente/Pôr do Sol" name="SolNascente" class="ra-btn" />
+        </ui:VisualElement>
+
+        <ui:Button text="⬅ Voltar ao Brasil" name="VoltarBrasil" style="margin-top: 30px; align-self: center; padding: 10px 24px; font-size: 16px;" />
+    </ui:VisualElement>
+</ui:UXML>

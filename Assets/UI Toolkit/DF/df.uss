@@ -1,0 +1,17 @@
+.ra-btn {
+    width: 130px;
+    height: 50px;
+    margin: 5px;
+    background-color: rgb(60, 120, 200);
+    color: white;
+    border-radius: 8px;
+    font-size: 12px;
+    -unity-font-style: bold;
+    white-space: normal;
+    border-width: 0;
+}
+
+.ra-btn:hover {
+    background-color: rgb(40, 90, 160);
+    scale: 1.05;
+}
