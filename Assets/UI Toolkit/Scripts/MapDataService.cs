@@ -15,22 +15,17 @@ public static class MapDataService
         public float percentual;
     }
 
-    // ====================================================================
-    // Mapa de calor – suporta filtros de crime e ano
-    // ====================================================================
     public static IEnumerator GetOccurrencesByState(string restUrl, string key,
         List<int> crimeIds, int? ano,
         Action<List<StateData>> onComplete)
     {
         bool hasCrime = crimeIds != null && crimeIds.Count > 0 && crimeIds.Count < 20;
         bool hasYear = ano.HasValue;
-        string query = "";   // declarado uma única vez
+        string query = "";
 
-        // Sem filtros → view agregada rápida
         if (!hasCrime && !hasYear)
         {
             query = "vw_ocorrencias_estado?select=estado,total";
-            Debug.Log($"[MapDataService] Mapa (agregado): {restUrl}{query}");
             bool done = false;
             List<StateData> result = new List<StateData>();
             yield return SupabaseRestClient.Get(restUrl, key, query, (status, body, err) =>
@@ -46,13 +41,11 @@ public static class MapDataService
             yield break;
         }
 
-        // Com filtros → usar vw_estado_crime_mesano
         var filters = new List<string>();
         if (hasCrime) filters.Add($"id_crime=in.({string.Join(",", crimeIds)})");
         if (hasYear) filters.Add($"ano=eq.{ano.Value}");
         string filterStr = filters.Count > 0 ? "&" + string.Join("&", filters) : "";
         query = $"vw_estado_crime_mesano?select=estado,total{filterStr}";
-        Debug.Log($"[MapDataService] Mapa (filtrado): {restUrl}{query}");
 
         bool completed = false;
         List<StateData> raw = new List<StateData>();
@@ -69,9 +62,6 @@ public static class MapDataService
         onComplete?.Invoke(grouped);
     }
 
-    // ====================================================================
-    // Resumo geral – suporta filtros de crime e ano
-    // ====================================================================
     public static IEnumerator GetGeneralSummary(string restUrl, string key,
         List<int> crimeIds, int? ano,
         Action<int, string> onComplete)
@@ -83,7 +73,6 @@ public static class MapDataService
         if (!hasCrime && !hasYear)
         {
             query = "vw_ocorrencias_crime?select=crime,total";
-            Debug.Log($"[MapDataService] Resumo (agregado): {restUrl}{query}");
             bool done = false;
             int total = 0;
             string top = "Nenhum";
@@ -108,7 +97,6 @@ public static class MapDataService
         if (hasYear) filters.Add($"ano=eq.{ano.Value}");
         string filterStr = filters.Count > 0 ? "&" + string.Join("&", filters) : "";
         query = $"vw_crime_mesano?select=crime,total{filterStr}";
-        Debug.Log($"[MapDataService] Resumo (filtrado): {restUrl}{query}");
 
         bool completed = false;
         int total2 = 0;
@@ -128,9 +116,6 @@ public static class MapDataService
         onComplete?.Invoke(total2, top2);
     }
 
-    // ====================================================================
-    // Detalhes de um estado (para o card ao clicar) – recebe o nome do estado
-    // ====================================================================
     public static IEnumerator GetStateDetailsByName(string restUrl, string key, string estadoNome,
         List<int> crimeIds, int? ano,
         Action<int, string, string> onComplete)
@@ -140,7 +125,6 @@ public static class MapDataService
         if (ano.HasValue) filters.Add($"ano=eq.{ano.Value}");
         string filterStr = "&" + string.Join("&", filters);
         string query = $"vw_estado_crime_mesano?select=crime,total{filterStr}";
-        Debug.Log($"[MapDataService] Detalhes {estadoNome}: {restUrl}{query}");
 
         bool completed = false;
         int total = 0;
@@ -166,21 +150,40 @@ public static class MapDataService
         onComplete?.Invoke(total, top, risk);
     }
 
-    // ====================================================================
-    // Método de compatibilidade para scripts antigos (usa o nome do estado)
-    // ====================================================================
-    public static IEnumerator GetStateDetails(string restUrl, string key, int stateId,
-        List<int> crimeIds, int? ano,
-        Action<int, string, string> onComplete)
+    public static IEnumerator GetMonthlyData(string restUrl, string key, string estadoNome,
+        List<int> crimeIds, int? ano, Action<List<int>> onComplete)
     {
-        Debug.LogError("GetStateDetails está obsoleto. Use GetStateDetailsByName passando o nome do estado.");
-        onComplete?.Invoke(0, "Erro", "Método obsoleto");
-        yield return null;
+        var filters = new List<string>();
+        if (!string.IsNullOrEmpty(estadoNome))
+            filters.Add($"estado=eq.{Uri.EscapeDataString(estadoNome)}");
+        if (crimeIds != null && crimeIds.Count > 0 && crimeIds.Count < 20)
+            filters.Add($"id_crime=in.({string.Join(",", crimeIds)})");
+        if (ano.HasValue)
+            filters.Add($"ano=eq.{ano.Value}");
+
+        string filterStr = filters.Count > 0 ? "&" + string.Join("&", filters) : "";
+        string query = $"vw_estado_crime_mesano?select=mes,total{filterStr}";
+
+        bool completed = false;
+        int[] monthly = new int[12];
+        yield return SupabaseRestClient.Get(restUrl, key, query, (status, body, err) =>
+        {
+            if (string.IsNullOrEmpty(err))
+            {
+                var pattern = @"""mes""\s*:\s*(\d+)\s*,\s*""total""\s*:\s*(\d+)";
+                foreach (Match m in Regex.Matches(body, pattern))
+                {
+                    if (int.TryParse(m.Groups[1].Value, out int mes) && int.TryParse(m.Groups[2].Value, out int total))
+                        if (mes >= 1 && mes <= 12) monthly[mes - 1] += total;
+                }
+            }
+            else Debug.LogError($"Erro dados mensais: {err}");
+            completed = true;
+        });
+        yield return new WaitUntil(() => completed);
+        onComplete?.Invoke(new List<int>(monthly));
     }
 
-    // ====================================================================
-    // Parsers
-    // ====================================================================
     private static List<StateData> ParseStateTotals(string json)
     {
         var list = new List<StateData>();

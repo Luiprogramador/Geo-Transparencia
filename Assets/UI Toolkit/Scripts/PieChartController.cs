@@ -37,11 +37,10 @@ public class PieChartController
 
         legendContainer = root.Q<VisualElement>("LegendContainer");
         if (legendContainer == null)
-            Debug.LogWarning("PieChartController: LegendContainer não encontrado. A legenda não será exibida.");
+            Debug.LogWarning("PieChartController: LegendContainer não encontrado.");
 
         pieChart = new PieChart();
         chartCanvas.Add(pieChart);
-        Debug.Log("PieChartController: Inicializado.");
     }
 
     public void Refresh()
@@ -65,7 +64,6 @@ public class PieChartController
 
         string filterStr = filters.Count > 0 ? "&" + string.Join("&", filters) : "";
         string resourcePath = $"vw_estado_crime_mesano?select=crime,total{filterStr}";
-        Debug.Log($"[PieChart] Carregando: {supabaseRestUrl}{resourcePath}");
 
         bool completed = false;
         var crimeTotals = new Dictionary<string, int>();
@@ -84,10 +82,7 @@ public class PieChartController
         });
         yield return new WaitUntil(() => completed);
 
-        // Ordena por total decrescente
         var sorted = crimeTotals.OrderByDescending(kv => kv.Value).ToList();
-
-        // Gera cores dinâmicas para cada crime
         var values = new List<float>();
         var colors = new List<Color>();
         float total = sorted.Sum(kv => kv.Value);
@@ -95,17 +90,13 @@ public class PieChartController
 
         for (int i = 0; i < totalCrimes; i++)
         {
-            var kvp = sorted[i];
-            values.Add(kvp.Value);
-            // Gera cor baseada no índice (hue) para distribuir uniformemente
+            values.Add(sorted[i].Value);
             float hue = (float)i / totalCrimes;
-            Color cor = Color.HSVToRGB(hue, 0.8f, 0.9f);
-            colors.Add(cor);
+            colors.Add(Color.HSVToRGB(hue, 0.8f, 0.9f));
         }
 
         pieChart.Values = values;
         pieChart.Colors = colors;
-
         UpdateLegend(sorted, total);
     }
 
@@ -113,7 +104,6 @@ public class PieChartController
     {
         if (legendContainer == null) return;
         legendContainer.Clear();
-
         if (total <= 0) return;
 
         int totalCrimes = data.Count;
@@ -123,7 +113,6 @@ public class PieChartController
             float percent = (kvp.Value / total) * 100f;
             float hue = (float)i / totalCrimes;
             Color cor = Color.HSVToRGB(hue, 0.8f, 0.9f);
-
             AddLegendItem(kvp.Key, cor, percent, kvp.Value);
         }
     }
@@ -132,16 +121,13 @@ public class PieChartController
     {
         var item = new VisualElement();
         item.AddToClassList("legend-item");
-
         var colorBox = new VisualElement();
         colorBox.AddToClassList("legend-color");
         colorBox.style.backgroundColor = color;
         item.Add(colorBox);
-
         var labelElement = new Label($"{label} ({percent:F1}% - {quantidade} ocorrências)");
         labelElement.AddToClassList("legend-label");
         item.Add(labelElement);
-
         legendContainer.Add(item);
     }
 }

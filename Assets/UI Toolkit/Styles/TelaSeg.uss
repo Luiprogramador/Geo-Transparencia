@@ -513,3 +513,16 @@ Scroller .unity-base-slider__dragger {
     background-color: #4ADE80;
     width: 100%;
 }
+
+/* Gráfico de linhas */
+#LineChartContainer {
+    margin-top: 16px;
+    background-color: #0a1a2e;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+/* Estilo dos rótulos do gráfico */
+.unity-text-element {
+    -unity-text-align: middle-center;
+}

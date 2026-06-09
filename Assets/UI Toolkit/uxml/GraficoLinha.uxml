@@ -1,0 +1,5 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="GraficoLinhaRoot" style="flex-grow: 1; min-height: 200px;">
+        <ui:VisualElement name="LineChartCanvas" style="flex-grow: 1;"/>
+    </ui:VisualElement>
+</ui:UXML>

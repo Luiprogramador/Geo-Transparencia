@@ -13,18 +13,16 @@
         </ui:VisualElement>
 
         <ui:VisualElement class="contentRow">
+            <!-- Filtros -->
             <ui:VisualElement class="filtros">
                 <ui:Label text="FILTROS" class="titulo"/>
                 <ui:Label text="Refinar os dados" class="textoSec"/>
-
                 <ui:Button name="CrimeButton" text="Tipo de Crime (todos)" class="btnFiltro"/>
-
                 <ui:Label text="Período (opcional)" class="subtitulo"/>
                 <ui:VisualElement class="dataRange">
                     <ui:DropdownField name="AnoDropdown" label="Ano" class="dateField"/>
                     <ui:Button name="AplicarPeriodoBtn" text="Aplicar" class="btnAplicar"/>
                 </ui:VisualElement>
-
                 <ui:VisualElement class="cardLegend">
                     <ui:Label text="LEGENDA DE RISCO" class="subtitulo"/>
                     <ui:Label text="Quanto mais quente, maior o risco." class="textoSec"/>
@@ -37,6 +35,7 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
+            <!-- Mapa -->
             <ui:VisualElement class="mapa">
                 <ui:VisualElement class="mapHeader">
                     <ui:VisualElement class="mapTitleWrap">
@@ -44,8 +43,7 @@
                         <ui:Label text="Visualize a distribuição de ocorrências por estado." class="textoSec"/>
                     </ui:VisualElement>
                 </ui:VisualElement>
-
-                <ui:VisualElement class="mapContainer">
+                <ui:VisualElement name="mapContainer" class="mapContainer">
                     <ui:VisualElement class="mapViewport">
                         <ui:Instance template="MapaBrasil" name="Mapa" class="mapaBrasil"/>
                     </ui:VisualElement>
@@ -64,9 +62,10 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
+            <!-- Resumo + Gráficos -->
             <ui:VisualElement class="resumo">
                 <ui:Label text="RESUMO GERAL" class="titulo"/>
-                <ui:VisualElement style="flex-grow: 0; flex-direction: row; flex-shrink: 1; justify-content: space-evenly; align-items: center;">
+                <ui:VisualElement style="flex-direction: row; justify-content: space-evenly;">
                     <ui:VisualElement class="kpiCard">
                         <ui:Label text="CRIMES REGISTRADOS" class="textoSec"/>
                         <ui:Label name="totalCrimesLabel" text="0" class="valor"/>
@@ -77,6 +76,10 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:Instance template="GraficoPizza"/>
+                <ui:VisualElement style="margin-top: 16px;">
+                    <ui:Label text="EVOLUÇÃO MENSAL" class="subtitulo" style="margin-bottom: 8px;"/>
+                    <ui:VisualElement name="LineChartContainer" style="height: 220px;"/>
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

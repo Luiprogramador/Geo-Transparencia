@@ -16,15 +16,14 @@ public class TelaSegInitializer : MonoBehaviour
     private UIDocument uiDoc;
     private VisualElement root;
     private PieChartController pieChartController;
+    private LineChartController lineChartController;
 
-    // Elementos do UXML
     private Button crimeButton;
     private DropdownField anoDropdown;
     private Button aplicarPeriodoBtn;
     private Label totalCrimesLabel, topCrimeLabel;
     private Label stateTitle, riskBadge, stateValue;
 
-    // Popup de crimes
     private VisualElement crimePopup;
     private ScrollView crimeListContainer;
     private Label selectedCountLabel;
@@ -34,9 +33,8 @@ public class TelaSegInitializer : MonoBehaviour
     private HashSet<int> activeSelectedIds = new HashSet<int>();
 
     private int? selectedAno = null;
-    private string selectedEstado = null; // null = Brasil, string = nome do estado
+    private string selectedEstado = null;
 
-    // Mapa
     private MapClickController mapClickController;
 
     private class CrimeButtonItem
@@ -51,8 +49,17 @@ public class TelaSegInitializer : MonoBehaviour
         uiDoc = GetComponent<UIDocument>();
         root = uiDoc.rootVisualElement;
 
+        // Inicializa gráfico de pizza
         pieChartController = new PieChartController(uiDoc, this, supabaseRestUrl, supabasePublishableKey);
 
+        // Inicializa gráfico de linhas (container deve existir no UXML)
+        var lineContainer = root.Q<VisualElement>("LineChartContainer");
+        if (lineContainer != null)
+            lineChartController = new LineChartController(lineContainer);
+        else
+            Debug.LogError("LineChartContainer não encontrado! Adicione um VisualElement com name='LineChartContainer' no resumo.");
+
+        // Elementos da UI
         crimeButton = root.Q<Button>("CrimeButton");
         anoDropdown = root.Q<DropdownField>("AnoDropdown");
         aplicarPeriodoBtn = root.Q<Button>("AplicarPeriodoBtn");
@@ -69,7 +76,6 @@ public class TelaSegInitializer : MonoBehaviour
             string anoStr = anoDropdown.value;
             selectedAno = (anoStr == "Todos" || string.IsNullOrEmpty(anoStr)) ? (int?)null : int.Parse(anoStr);
             RefreshData();
-            UpdatePieChart();
         };
 
         CreateCrimePopup();
@@ -88,7 +94,7 @@ public class TelaSegInitializer : MonoBehaviour
         }
         else
         {
-            Debug.LogError("[TelaSeg] MapClickController não encontrado no GameObject!");
+            Debug.LogError("[TelaSeg] MapClickController não encontrado!");
         }
     }
 
@@ -164,7 +170,6 @@ public class TelaSegInitializer : MonoBehaviour
         pendingSelectedIds = new HashSet<int>(activeSelectedIds);
         UpdateCrimeButtonsSelection();
         UpdateSelectedCountLabel();
-
         crimePopup.style.display = DisplayStyle.Flex;
         crimePopup.BringToFront();
     }
@@ -172,7 +177,7 @@ public class TelaSegInitializer : MonoBehaviour
     private void ClosePopup() => crimePopup.style.display = DisplayStyle.None;
     private void SelectAll() { pendingSelectedIds = new HashSet<int>(crimeButtons.Select(c => c.id)); UpdateCrimeButtonsSelection(); UpdateSelectedCountLabel(); }
     private void ClearAll() { pendingSelectedIds.Clear(); UpdateCrimeButtonsSelection(); UpdateSelectedCountLabel(); }
-    private void ApplySelection() { activeSelectedIds = new HashSet<int>(pendingSelectedIds); ClosePopup(); UpdateCrimeButtonText(); RefreshData(); UpdatePieChart(); }
+    private void ApplySelection() { activeSelectedIds = new HashSet<int>(pendingSelectedIds); ClosePopup(); UpdateCrimeButtonText(); RefreshData(); }
     private void UpdateCrimeButtonsSelection()
     {
         foreach (var item in crimeButtons)
@@ -194,12 +199,9 @@ public class TelaSegInitializer : MonoBehaviour
 
     private IEnumerator InitializeAsync()
     {
-        Debug.Log("[TelaSeg] Inicializando...");
         yield return LoadCrimes();
-        yield return SetupMapImages(); // apenas para mapear as imagens para o mapa de calor, sem registrar clique
+        yield return SetupMapImages();
         RefreshData();
-        UpdatePieChart();
-        Debug.Log("[TelaSeg] Pronto.");
     }
 
     private IEnumerator LoadCrimes()
@@ -244,7 +246,6 @@ public class TelaSegInitializer : MonoBehaviour
                 UpdateCrimeButtonsSelection();
                 UpdateSelectedCountLabel();
                 UpdateCrimeButtonText();
-                Debug.Log($"[TelaSeg] Carregados {crimeButtons.Count} crimes.");
             }
             done = true;
         });
@@ -254,32 +255,14 @@ public class TelaSegInitializer : MonoBehaviour
     private IEnumerator SetupMapImages()
     {
         yield return new WaitForSeconds(0.1f);
-        var mapaInstance = root.Q<VisualElement>("Mapa");
-        if (mapaInstance == null) yield break;
-
-        var allImages = mapaInstance.Query<Image>().ToList();
-        Debug.Log($"[TelaSeg] {allImages.Count} imagens encontradas no mapa (serão usadas apenas para coloração).");
-        // Não registramos clique aqui, pois o MapClickController já faz isso.
-        // As imagens ficarão disponíveis para UpdateMapColors.
+        // Não precisa registrar cliques, o MapClickController já faz
     }
 
     private void OnEstadoSelecionadoNoMapa(string estadoNome)
     {
-        // estadoNome = null significa Brasil
         selectedEstado = estadoNome;
-        if (string.IsNullOrEmpty(selectedEstado))
-        {
-            stateTitle.text = "Brasil";
-            // Buscar resumo geral? O próprio MapClickController já atualiza os labels,
-            // mas aqui podemos forçar a atualização do painel se necessário.
-            // Como o MapClickController já invoca OnResumoAtualizado, os labels totais já são atualizados.
-        }
-        else
-        {
-            stateTitle.text = selectedEstado;
-            // Os detalhes do estado são carregados pelo MapClickController e exibidos via OnResumoAtualizado.
-        }
-        UpdatePieChart();
+        stateTitle.text = string.IsNullOrEmpty(selectedEstado) ? "Brasil" : selectedEstado;
+        RefreshData();
     }
 
     private void RefreshData()
@@ -287,12 +270,22 @@ public class TelaSegInitializer : MonoBehaviour
         mapClickController?.AplicarFiltros(activeSelectedIds.ToList(), selectedAno);
         StartCoroutine(MapDataService.GetOccurrencesByState(supabaseRestUrl, supabasePublishableKey,
             activeSelectedIds.ToList(), selectedAno, UpdateMapColors));
-        // O resumo geral/detalhes do estado já são atualizados pelo MapClickController via AplicarFiltros.
+        StartCoroutine(LoadMonthlyData());
+        UpdatePieChart();
+    }
+
+    private IEnumerator LoadMonthlyData()
+    {
+        string estado = string.IsNullOrEmpty(selectedEstado) ? null : selectedEstado;
+        yield return MapDataService.GetMonthlyData(supabaseRestUrl, supabasePublishableKey,
+            estado, activeSelectedIds.ToList(), selectedAno, monthlyData =>
+            {
+                lineChartController?.SetData(monthlyData);
+            });
     }
 
     private void UpdateMapColors(List<MapDataService.StateData> data)
     {
-        // Obtém as imagens do mapa novamente (ou podemos cachear)
         var mapaInstance = root.Q<VisualElement>("Mapa");
         if (mapaInstance == null) return;
         var estadoImages = new Dictionary<string, Image>();
@@ -309,8 +302,7 @@ public class TelaSegInitializer : MonoBehaviour
         float max = data.Max(d => d.ocorrencias);
         foreach (var kvp in estadoImages)
         {
-            string nomeImagem = kvp.Key;
-            string nomeEstado = MapImageNameToStateName(nomeImagem);
+            string nomeEstado = MapImageNameToStateName(kvp.Key);
             var state = data.FirstOrDefault(d => d.nome == nomeEstado);
             if (state != null)
             {
