@@ -1,23 +1,34 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public partial class MapClickController : MonoBehaviour
+public class MapClickController : MonoBehaviour
 {
-    public System.Action<int, string> OnResumoAtualizado;
+    // ===================================================================
+    // 🔧 CONFIGURAÇÃO
+    // ===================================================================
     public string restUrl;
     public string apiKey;
+    public Action<int, string> OnResumoAtualizado; // total, topCrime
+    public Action<string> OnEstadoSelecionado;      // nome do estado ou null para "Brasil"
 
-    // 👇 recebe as credenciais do TelaSegInitializer
-    public void Configurar(string url, string key)
-    {
-        restUrl = url;
-        apiKey = key;
-        Debug.Log($"[MapClick] Configurado → restUrl='{restUrl}' | apiKey vazio? {string.IsNullOrEmpty(apiKey)}");
-    }
+    // Filtros ativos (para consulta de detalhes)
+    private List<int> filtroCrimeIds = new List<int>();
+    private int? filtroAno = null;
 
-    // Nome do elemento no UXML → ID da SUA API
+    // Estado atual do mapa
+    private VisualElement estadoAtualSelecionado = null;
+    private string estadoAtualNome = null;
+
+    // Elemento container do mapa (para validar área de clique)
+    private VisualElement mapContainer;
+
+    // ===================================================================
+    // 🗺️ MAPEAMENTO DE ESTADOS
+    // ===================================================================
     private Dictionary<string, int> estadoParaId = new Dictionary<string, int>()
     {
         {"Acre", 1}, {"Amapa", 2}, {"Amazonas", 3}, {"Para", 4},
@@ -29,7 +40,6 @@ public partial class MapClickController : MonoBehaviour
         {"Parana", 25}, {"RioGrandeSul", 26}, {"SantaCatarina", 27}
     };
 
-    // Nome do elemento → nome bonito pra exibir
     private Dictionary<string, string> estadoNomes = new Dictionary<string, string>()
     {
         {"Acre", "Acre"}, {"Alagoas", "Alagoas"}, {"Amapa", "Amapá"}, {"Amazonas", "Amazonas"},
@@ -44,35 +54,53 @@ public partial class MapClickController : MonoBehaviour
         {"Tocantins", "Tocantins"}
     };
 
-    // Guarda referência de cada elemento de estado encontrado no UXML
+    // Elementos da UI
     private Dictionary<string, VisualElement> estadoElementos = new Dictionary<string, VisualElement>();
-
-    // Guarda a cor de risco de cada estado (pra reset depois do clique)
-    private Dictionary<string, Color> corRiscoEstado = new Dictionary<string, Color>();
-
     private VisualElement root;
 
-    // ====== HIGHLIGHT ======
-    private VisualElement estadoAtualSelecionado = null;
-    private static readonly Color CorSemDados = new Color(0.35f, 0.40f, 0.50f); // cinza-azulado
-    private static readonly Color CorBorda    = Color.white;                    // cor do contorno
-    private const float LarguraBorda          = 6f;                             // grossura da borda
-    private const float EscalaSelecionado     = 1.10f;                          // 10% maior = "sobe"
-
-    // ====== PAINEL (labels) ======
+    // Labels do painel de estado
     private Label labelNome;
     private Label labelRisco;
     private Label labelOcorrencias;
 
-    void OnEnable()
+    // ===================================================================
+    // 🎮 MÉTODOS PÚBLICOS
+    // ===================================================================
+    public void Configurar(string url, string key)
     {
-        StartCoroutine(SetupClicks());
+        restUrl = url;
+        apiKey = key;
+        Debug.Log($"[MapClick] Configurado");
     }
 
-    private System.Collections.IEnumerator SetupClicks()
+    public void AplicarFiltros(List<int> crimeIds, int? ano)
+    {
+        filtroCrimeIds = crimeIds ?? new List<int>();
+        filtroAno = ano;
+
+        if (estadoAtualSelecionado != null && estadoAtualNome != null)
+        {
+            AtualizarDetalhesEstado(estadoAtualNome);
+        }
+        else
+        {
+            CarregarResumoGeral();
+        }
+    }
+
+    public List<int> GetCrimeIdsOuNull() => (filtroCrimeIds != null && filtroCrimeIds.Count > 0) ? filtroCrimeIds : null;
+    public int? GetAno() => filtroAno;
+    public string GetEstadoAtual() => estadoAtualNome;
+
+    // ===================================================================
+    // 🖱️ CLIQUE NO MAPA
+    // ===================================================================
+    private void OnEnable() => StartCoroutine(SetupClicks());
+    private void OnDisable() { if (root != null) root.UnregisterCallback<ClickEvent>(OnMapaClicked); }
+
+    private IEnumerator SetupClicks()
     {
         root = GetComponent<UIDocument>().rootVisualElement;
-
         yield return null;
         yield return null;
 
@@ -83,21 +111,22 @@ public partial class MapClickController : MonoBehaviour
             tentativas++;
         }
 
-        estadoElementos.Clear();
+        // Obtém o container do mapa (usado para validar área de clique)
+        mapContainer = root.Q<VisualElement>("mapContainer");
+        if (mapContainer == null)
+            Debug.LogWarning("[MapClick] 'mapContainer' não encontrado. A validação de área pode falhar.");
 
+        estadoElementos.Clear();
         foreach (var estado in estadoParaId)
         {
             VisualElement elemento = root.Q<VisualElement>(estado.Key);
-
             if (elemento != null)
             {
                 estadoElementos[estado.Key] = elemento;
                 elemento.pickingMode = PickingMode.Ignore;
             }
             else
-            {
-                Debug.LogWarning($"⚠️ Elemento '{estado.Key}' não encontrado no UXML!");
-            }
+                Debug.LogWarning($"⚠️ Elemento '{estado.Key}' não encontrado!");
         }
 
         Debug.Log($"[MapClick] {estadoElementos.Count} estados registrados.");
@@ -105,78 +134,42 @@ public partial class MapClickController : MonoBehaviour
         root.pickingMode = PickingMode.Position;
         root.RegisterCallback<ClickEvent>(OnMapaClicked);
 
-        labelNome        = root.Q<Label>("stateTitle");
-        labelRisco       = root.Q<Label>("riskBadge");
+        labelNome = root.Q<Label>("stateTitle");
+        labelRisco = root.Q<Label>("riskBadge");
         labelOcorrencias = root.Q<Label>("stateValue");
 
-        if (labelNome == null)
-            Debug.LogWarning(" Label 'stateTitle' não encontrado — confira o name no UXML!");
-        if (labelRisco == null)
-            Debug.LogWarning(" Label 'riskBadge' não encontrado!");
-        if (labelOcorrencias == null)
-            Debug.LogWarning(" Label 'stateValue' não encontrado!");
+        if (labelNome == null) Debug.LogWarning("Label 'stateTitle' não encontrado!");
+        if (labelRisco == null) Debug.LogWarning("Label 'riskBadge' não encontrado!");
+        if (labelOcorrencias == null) Debug.LogWarning("Label 'stateValue' não encontrado!");
 
-        // PINTA O HEATMAP INICIAL (cinza pra todos + risco real pela API)
-        PintarHeatmapInicial();
+        CarregarResumoGeral();
     }
 
-    void OnDisable()
+    private void OnMapaClicked(ClickEvent evt)
     {
-        if (root != null)
-            root.UnregisterCallback<ClickEvent>(OnMapaClicked);
-    }
-
-    // ===================================================================
-    // 🖱️ CLIQUE
-    // ===================================================================
-
-    void OnMapaClicked(ClickEvent evt)
-    {
-        Debug.Log("Clique detectado em: " + (evt.target as VisualElement)?.name);
-
-        var elementoClicado = evt.target as VisualElement;
-        if (elementoClicado != null)
-            Debug.Log("Estado clicado: " + elementoClicado.name);
+        // Valida se o clique foi dentro da área do mapa (container)
+        if (!IsClickInsideMapArea(evt))
+            return;
 
         Vector2 clickPos = evt.position;
         string acertou = null;
 
-        Debug.Log($"==== CLIQUE em {clickPos} ====");
-
-        var ordem = estadoElementos
-            .OrderBy(kv => kv.Key == "DistritoFederal" ? 0 : 1)
-            .ToList();
+        var ordem = estadoElementos.OrderBy(kv => kv.Key == "DistritoFederal" ? 0 : 1).ToList();
 
         foreach (var kv in ordem)
         {
-            string nomeChave = kv.Key;
+            string chave = kv.Key;
             VisualElement elemento = kv.Value;
-
             Texture2D tex = GetTextura(elemento);
-
-            if (nomeChave == "DistritoFederal")
-            {
-                Vector2 l = elemento.WorldToLocal(clickPos);
-                var r = elemento.contentRect;
-                Debug.Log($"[DF] tex={(tex == null ? "NULL" : tex.name)} | " +
-                          $"readable={(tex != null && tex.isReadable)} | " +
-                          $"contentRect={r} | local={l} | " +
-                          $"worldBound={elemento.worldBound} | " +
-                          $"display={elemento.resolvedStyle.display}");
-            }
-
             if (tex == null || !tex.isReadable) continue;
 
             Vector2 local = elemento.WorldToLocal(clickPos);
             var rect = elemento.contentRect;
-
-            if (rect.width <= 0 || rect.height <= 0) continue;
             if (local.x < 0 || local.y < 0 || local.x > rect.width || local.y > rect.height)
                 continue;
 
-            float texAspect  = (float)tex.width / tex.height;
+            float texAspect = (float)tex.width / tex.height;
             float rectAspect = rect.width / rect.height;
-
             float drawW = rect.width, drawH = rect.height;
             float offsetX = 0, offsetY = 0;
 
@@ -193,137 +186,147 @@ public partial class MapClickController : MonoBehaviour
 
             float lx = local.x - offsetX;
             float ly = local.y - offsetY;
+            if (lx < 0 || ly < 0 || lx > drawW || ly > drawH) continue;
 
-            if (lx < 0 || ly < 0 || lx > drawW || ly > drawH)
-                continue;
-
-            int px = Mathf.Clamp((int)(lx / drawW * tex.width),  0, tex.width  - 1);
+            int px = Mathf.Clamp((int)(lx / drawW * tex.width), 0, tex.width - 1);
             int py = Mathf.Clamp((int)(ly / drawH * tex.height), 0, tex.height - 1);
             py = tex.height - 1 - py;
 
-            Color pixel = tex.GetPixel(px, py);
-            Debug.Log($"{nomeChave} | px,py=({px},{py}) | alpha={pixel.a:F3} | tex={tex.width}x{tex.height}");
-
             if (TemPixelOpaco(tex, px, py))
             {
-                acertou = nomeChave;
+                acertou = chave;
                 break;
             }
         }
 
         if (acertou != null)
-            EstadoSelecionado(acertou, estadoParaId[acertou]);
+            EstadoSelecionado(acertou);
         else
-            Debug.Log("Clique fora de qualquer estado (área transparente).");
+            CarregarResumoGeral(); // clicou no mapa mas fora dos estados
+    }
+
+    /// <summary>Verifica se o clique ocorreu dentro do container do mapa</summary>
+    private bool IsClickInsideMapArea(ClickEvent evt)
+    {
+        if (mapContainer == null) return true; // fallback: processa sempre
+
+        Vector2 clickPos = evt.position;
+        var worldBound = mapContainer.worldBound;
+        return worldBound.Contains(clickPos);
     }
 
     private Texture2D GetTextura(VisualElement elemento)
     {
-        if (elemento is Image img && img.image is Texture2D t)
-            return t;
-
+        if (elemento is Image img && img.image is Texture2D t) return t;
         var bg = elemento.resolvedStyle.backgroundImage;
-        if (bg.texture != null)
-            return bg.texture;
-
-        return null;
+        return bg.texture as Texture2D;
     }
 
     private bool TemPixelOpaco(Texture2D tex, int px, int py, int raio = 2, float limite = 0.01f)
     {
         for (int x = -raio; x <= raio; x++)
-        {
             for (int y = -raio; y <= raio; y++)
             {
-                int sx = Mathf.Clamp(px + x, 0, tex.width  - 1);
+                int sx = Mathf.Clamp(px + x, 0, tex.width - 1);
                 int sy = Mathf.Clamp(py + y, 0, tex.height - 1);
                 if (tex.GetPixel(sx, sy).a > limite)
                     return true;
             }
-        }
         return false;
     }
 
-    // ====== DESTACA O ESTADO SELECIONADO ======
-    private void DestacarEstado(string nomeChave)
-    {
-        // RESET do anterior: volta pra cor de risco original
-        if (estadoAtualSelecionado != null)
-        {
-            var chaveAnt = estadoElementos.FirstOrDefault(x => x.Value == estadoAtualSelecionado).Key;
-            if (chaveAnt != null && corRiscoEstado.TryGetValue(chaveAnt, out var corOrig))
-                AplicarTint(estadoAtualSelecionado, corOrig);
-        }
-
-        // DESTAQUE no novo: branco suave
-        if (estadoElementos.TryGetValue(nomeChave, out var el))
-        {
-            Color brancoSuave = new Color(0.90f, 0.92f, 0.95f); // off-white levemente azulado
-            AplicarTint(el, brancoSuave);
-
-            el.BringToFront();
-            estadoAtualSelecionado = el;
-            Debug.Log($"🆙 Estado destacado (branco suave): {nomeChave}");
-        }
-        else
-        {
-            Debug.LogWarning($"⚠️ Não achei o elemento '{nomeChave}' para destacar!");
-        }
-    }
-
-    void EstadoSelecionado(string nomeChave, int idEstado)
+    private void EstadoSelecionado(string nomeChave)
     {
         string nomeBonito = estadoNomes.ContainsKey(nomeChave) ? estadoNomes[nomeChave] : nomeChave;
 
-        Debug.Log($"Você selecionou: {nomeBonito} | ID = {idEstado}");
+        // ✅ Otimização: se já estiver selecionado o mesmo estado, não recarrega
+        if (estadoAtualNome == nomeBonito)
+        {
+            Debug.Log($"[MapClick] Estado '{nomeBonito}' já selecionado. Ignorando recarga.");
+            return;
+        }
 
-        DestacarEstado(nomeChave);
+        Debug.Log($"Você selecionou: {nomeBonito}");
 
-        // Atualiza o painel JÁ (dados locais)
-        if (labelNome != null)        labelNome.text        = nomeBonito;
+        if (estadoElementos.TryGetValue(nomeChave, out var el))
+            estadoAtualSelecionado = el;
+        estadoAtualNome = nomeBonito;
+
+        OnEstadoSelecionado?.Invoke(nomeBonito);
+        AtualizarDetalhesEstado(nomeBonito);
+    }
+
+    private void AtualizarDetalhesEstado(string nomeEstado)
+    {
+        if (labelNome != null) labelNome.text = nomeEstado;
         if (labelOcorrencias != null) labelOcorrencias.text = "—";
-        if (labelRisco != null)       labelRisco.text       = "—";
+        if (labelRisco != null) labelRisco.text = "—";
 
-        // Busca detalhes no Supabase (respeitando filtros ativos)
-        StartCoroutine(MapDataService.GetStateDetails(
-            restUrl, apiKey, idEstado,
-            GetCrimeIdsOuNull(), filtroDataInicio, filtroDataFim,
-            OnDadosRecebidos
+        StartCoroutine(MapDataService.GetStateDetailsByName(
+            restUrl, apiKey, nomeEstado,
+            GetCrimeIdsOuNull(), filtroAno,
+            OnDadosEstadoRecebidos
         ));
     }
 
-    // Callback: total, topCrime, risk
-    void OnDadosRecebidos(int total, string topCrime, string risk)
+    private void OnDadosEstadoRecebidos(int total, string topCrime, string risk)
     {
-        Debug.Log($"✅ Dados recebidos → total: {total} | topCrime: {topCrime} | risk: {risk}");
+        Debug.Log($"✅ Dados do estado: total={total}, topCrime={topCrime}, risk={risk}");
 
-        // 1) ATUALIZA OS LABELS DO PAINEL
         if (labelOcorrencias != null)
             labelOcorrencias.text = total > 0 ? total.ToString("N0") : "0";
-        else
-            Debug.LogError("❌ labelOcorrencias é NULL! Confere o name no UXML.");
-
         if (labelRisco != null)
             labelRisco.text = string.IsNullOrEmpty(risk) ? "Sem dados" : risk;
-        else
-            Debug.LogError("❌ labelRisco é NULL! Confere o name no UXML.");
 
-        // 2) ATUALIZA A COR DO MAPA
-        if (estadoAtualSelecionado != null)
+        OnResumoAtualizado?.Invoke(total, topCrime);
+    }
+
+    private void CarregarResumoGeral()
+    {
+        // ✅ Otimização: se já estiver no modo resumo geral (Brasil), não recarrega
+        if (estadoAtualNome == null)
         {
-            var chave = estadoElementos.FirstOrDefault(x => x.Value == estadoAtualSelecionado).Key;
-            if (chave != null)
-            {
-                float valor = RiscoTextoParaValor(risk);
-                Color cor = CorDoRisco(valor);
-                corRiscoEstado[chave] = cor; // guarda a cor real pro reset depois
-
-                // como está selecionado, mantém o branco suave por cima
-                AplicarTint(estadoAtualSelecionado, new Color(0.90f, 0.92f, 0.95f));
-            }
+            Debug.Log("[MapClick] Já está no resumo geral. Ignorando recarga.");
+            return;
         }
 
-        // 3) ⬇️ ALIMENTA O RESUMO GERAL (sempre, fora de qualquer if)
+        Debug.Log("[MapClick] Carregando resumo geral (Brasil)");
+        estadoAtualSelecionado = null;
+        estadoAtualNome = null;
+
+        OnEstadoSelecionado?.Invoke(null); // null significa "Brasil"
+
+        if (labelNome != null) labelNome.text = "Brasil";
+        if (labelOcorrencias != null) labelOcorrencias.text = "—";
+        if (labelRisco != null) labelRisco.text = "—";
+
+        StartCoroutine(MapDataService.GetGeneralSummary(
+            restUrl, apiKey,
+            GetCrimeIdsOuNull(), filtroAno,
+            OnResumoGeralRecebido
+        ));
+    }
+
+    private void OnResumoGeralRecebido(int total, string topCrime)
+    {
+        Debug.Log($"✅ Resumo geral: total={total}, topCrime={topCrime}");
+
+        string risk = CalcularRiscoNacional(total);
+
+        if (labelOcorrencias != null)
+            labelOcorrencias.text = total > 0 ? total.ToString("N0") : "0";
+        if (labelRisco != null)
+            labelRisco.text = string.IsNullOrEmpty(risk) ? "Sem dados" : risk;
+
         OnResumoAtualizado?.Invoke(total, topCrime);
+    }
+
+    private string CalcularRiscoNacional(int total)
+    {
+        if (total > 1000000) return "CRÍTICO";
+        if (total > 500000) return "ALTO";
+        if (total > 100000) return "MÉDIO";
+        if (total > 10000) return "BAIXO";
+        return "MÍNIMO";
     }
 }

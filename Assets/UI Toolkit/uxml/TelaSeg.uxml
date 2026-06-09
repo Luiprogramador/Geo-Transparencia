@@ -1,11 +1,10 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-
-    <ui:Template name="MapaBrasil" src="project://database/Assets/UI%20Toolkit/TelaEstados.uxml?fileID=9197481963319205126&amp;guid=c62b2133e7f91de49bcaf5f5d7d25276&amp;type=3#TelaEstados"/>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Template name="GraficoPizza" src="project://database/Assets/UI%20Toolkit/uxml/GraficoPizza.uxml?fileID=9197481963319205126&amp;guid=cea129fa34d192b4c9bc3b078752b815&amp;type=3#GraficoPizza"/>
+    <ui:Template name="MapaBrasil" src="project://database/Assets/UI%20Toolkit/uxml/TelaEstados.uxml?fileID=9197481963319205126&amp;guid=c62b2133e7f91de49bcaf5f5d7d25276&amp;type=3#TelaEstados"/>
     <Style src="project://database/Assets/UI%20Toolkit/Styles/TelaSeg.uss"/>
+    <Style src="project://database/Assets/UI%20Toolkit/Styles/GraficoPizza.uss"/>
 
     <ui:VisualElement name="Root" class="root">
-
-        <!-- TOPO -->
         <ui:VisualElement class="topbar">
             <ui:Label text="Transparência Visual" class="brandTitle"/>
             <ui:Label text="de Dados Públicos" class="brandSub"/>
@@ -13,10 +12,7 @@
             <ui:Label text="2025-2026" class="dateText"/>
         </ui:VisualElement>
 
-        <!-- LINHA PRINCIPAL: 3 COLUNAS LADO A LADO -->
         <ui:VisualElement class="contentRow">
-
-            <!-- COLUNA ESQUERDA: FILTROS -->
             <ui:VisualElement class="filtros">
                 <ui:Label text="FILTROS" class="titulo"/>
                 <ui:Label text="Refinar os dados" class="textoSec"/>
@@ -25,12 +21,10 @@
 
                 <ui:Label text="Período (opcional)" class="subtitulo"/>
                 <ui:VisualElement class="dataRange">
-                    <ui:TextField name="DataInicio" placeholder="mm" class="dateField"/>
-                    <ui:DropdownField name="AnoDropdown" class="dateField anoDropdown"/>
-                    <ui:Button name="AplicarDataBtn" text="Aplicar" class="btnAplicar"/>
+                    <ui:DropdownField name="AnoDropdown" label="Ano" class="dateField"/>
+                    <ui:Button name="AplicarPeriodoBtn" text="Aplicar" class="btnAplicar"/>
                 </ui:VisualElement>
 
-                <!-- LEGENDA -->
                 <ui:VisualElement class="cardLegend">
                     <ui:Label text="LEGENDA DE RISCO" class="subtitulo"/>
                     <ui:Label text="Quanto mais quente, maior o risco." class="textoSec"/>
@@ -43,9 +37,14 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <!-- COLUNA CENTRO: MAPA -->
             <ui:VisualElement class="mapa">
-                <ui:Label text="MAPA DE CALOR — BRASIL" class="titulo"/>
+                <ui:VisualElement class="mapHeader">
+                    <ui:VisualElement class="mapTitleWrap">
+                        <ui:Label text="MAPA DE CALOR — BRASIL" class="titulo"/>
+                        <ui:Label text="Visualize a distribuição de ocorrências por estado." class="textoSec"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
                 <ui:VisualElement class="mapContainer">
                     <ui:VisualElement class="mapViewport">
                         <ui:Instance template="MapaBrasil" name="Mapa" class="mapaBrasil"/>
@@ -65,34 +64,20 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <!-- COLUNA DIREITA: RESUMO -->
             <ui:VisualElement class="resumo">
                 <ui:Label text="RESUMO GERAL" class="titulo"/>
-                <ui:VisualElement class="kpiCard">
-                    <ui:Label text="CRIMES REGISTRADOS" class="textoSec"/>
-                    <ui:Label name="totalCrimesLabel" text="0" class="valor"/>
+                <ui:VisualElement style="flex-grow: 0; flex-direction: row; flex-shrink: 1; justify-content: space-evenly; align-items: center;">
+                    <ui:VisualElement class="kpiCard">
+                        <ui:Label text="CRIMES REGISTRADOS" class="textoSec"/>
+                        <ui:Label name="totalCrimesLabel" text="0" class="valor"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="kpiCard">
+                        <ui:Label text="MAIOR OCORRÊNCIA" class="textoSec"/>
+                        <ui:Label name="topCrimeLabel" text="-" class="valor"/>
+                    </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement class="kpiCard">
-                    <ui:Label text="MAIOR OCORRÊNCIA" class="textoSec"/>
-                    <ui:Label name="topCrimeLabel" text="-" class="valor"/>
-                </ui:VisualElement>
-            </ui:VisualElement>
-
-        </ui:VisualElement>
-
-        <!-- POPUP FLUTUANTE SOBRE TUDO -->
-        <ui:VisualElement name="CrimePopup" class="popup" style="display: none;">
-            <ui:VisualElement class="popupHeader">
-                <ui:Label text="Selecione os crimes" class="popupTitle"/>
-                <ui:Button name="ClosePopupBtn" text="✕" class="closeBtn"/>
-            </ui:VisualElement>
-            <ui:ScrollView name="CrimeListContainer" class="crimeList"/>
-            <ui:VisualElement class="popupFooter">
-                <ui:Label name="SelectedCountLabel" text="0 selecionados" class="selectedCountLabel"/>
-                <ui:Button name="ClearBtn" text="Limpar" class="popupButton"/>
-                <ui:Button name="ApplyBtn" text="Aplicar" class="popupButton popupButtonPrimary"/>
+                <ui:Instance template="GraficoPizza"/>
             </ui:VisualElement>
         </ui:VisualElement>
-
     </ui:VisualElement>
 </ui:UXML>

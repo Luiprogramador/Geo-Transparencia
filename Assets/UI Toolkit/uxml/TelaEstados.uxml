@@ -1,6 +1,6 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/estados.uss?fileID=7433441132597879392&amp;guid=794cae2aceee70943a369938d66eaeea&amp;type=3#estados"/>
-    <ui:VisualElement name="VisualElement" style="flex-grow: 1; width: 100%; height: 100%; align-self: center;">
+    <Style src="project://database/Assets/UI%20Toolkit/Styles/estados.uss?fileID=7433441132597879392&amp;guid=794cae2aceee70943a369938d66eaeea&amp;type=3#estados"/>
+    <ui:VisualElement name="VisualElement" style="flex-grow: 1; align-items: center; justify-content: center; flex-basis: 50px; align-self: center; align-content: center; width: 100%; max-width: 100%; max-height: 100%; color: rgb(0, 0, 0); transform-origin: center; height: 100%;">
         <ui:Image source="project://database/Assets/Images/br_acre.png?fileID=2800000&amp;guid=460bf02f68507264e93f5e9f9c56adbc&amp;type=3#br_acre" picking-mode="Position" enabled="true" uv="0,0,1,1" name="Acre" scale-mode="ScaleToFit" class="estados" style="position: absolute; align-items: flex-start;"/>
         <ui:Image source="project://database/Assets/Images/br_alagoas.png?fileID=2800000&amp;guid=703e6a4902c2add4aa31e47dbe4f51ee&amp;type=3#br_alagoas" picking-mode="Position" enabled="true" uv="0,0,1,1" name="Alagoas" class="estados" style="position: absolute;"/>
         <ui:Image source="project://database/Assets/Images/br_amapa.png?fileID=2800000&amp;guid=1687baa8ceb25f046a39004dc20de8eb&amp;type=3#br_amapa" picking-mode="Position" enabled="true" uv="0,0,1,1" name="Amapa" class="estados" style="position: absolute;"/>

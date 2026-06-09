@@ -1,12 +1,12 @@
+/* ========== BASE ========== */
 .root {
-    background-color: red;
     position: absolute;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
     flex-direction: column;
-    background-color: #0A0F1C;
+    background-color: rgb(10, 15, 28);
     padding: 16px;
 }
 
@@ -14,12 +14,13 @@ Label {
     white-space: normal;
 }
 
+/* ========== TOPBAR ========== */
 .topbar {
     flex-direction: row;
     align-items: center;
-    background-color: #111827;
+    background-color: rgb(17, 24, 39);
     border-width: 1px;
-    border-color: #1F2A44;
+    border-color: rgb(31, 42, 68);
     border-radius: 14px;
     padding: 10px 16px;
     margin-bottom: 16px;
@@ -33,61 +34,65 @@ Label {
 }
 
 .brandSub {
-    color: #8B9DC3;
-    font-size: 12px;
+    color: rgb(139, 157, 195);
+    font-size: 16px;
     flex-grow: 1;
 }
 
 .navActive {
-    color: #4ADE80;
-    font-size: 14px;
+    color: rgb(74, 222, 128);
+    font-size: 16px;
     -unity-font-style: bold;
     margin-right: 20px;
 }
 
 .dateText {
-    color: #B9C7DB;
-    font-size: 12px;
-    background-color: #0B1120;
+    color: rgb(185, 199, 219);
+    font-size: 16px;
+    background-color: rgb(11, 17, 32);
     border-width: 1px;
-    border-color: #2A3A5C;
+    border-color: rgb(42, 58, 92);
     border-radius: 10px;
     padding: 4px 10px;
 }
 
+/* ========== LAYOUT ========== */
 .contentRow {
     flex-grow: 1;
     flex-direction: row;
 }
 
 .filtros {
-    width: 280px;
-    background-color: #111827;
+    width: auto;
+    background-color: rgb(17, 24, 39);
     border-width: 1px;
-    border-color: #1F2A44;
+    border-color: rgb(31, 42, 68);
     border-radius: 16px;
     padding: 16px;
     margin-right: 16px;
+    overflow: scroll;
 }
 
 .mapa {
     flex-grow: 1;
-    background-color: #111827;
+    background-color: rgb(17, 24, 39);
     border-width: 1px;
-    border-color: #1F2A44;
+    border-color: rgb(31, 42, 68);
     border-radius: 16px;
     padding: 16px;
     margin-right: 16px;
     flex-direction: column;
+    min-width: 50%;
 }
 
 .resumo {
-    width: 260px;
-    background-color: #111827;
+    width: 30%;
+    background-color: rgb(17, 24, 39);
     border-width: 1px;
-    border-color: #1F2A44;
+    border-color: rgb(31, 42, 68);
     border-radius: 16px;
     padding: 16px;
+    overflow: scroll;
 }
 
 .titulo {
@@ -98,260 +103,261 @@ Label {
 }
 
 .subtitulo {
-    color: #A0B0D0;
-    font-size: 14px;
+    color: rgb(160, 176, 208);
+    font-size: 16px;
     -unity-font-style: bold;
     margin-top: 16px;
     margin-bottom: 8px;
 }
 
 .textoSec {
-    color: #6B7A99;
-    font-size: 12px;
+    color: rgb(107, 122, 153);
+    font-size: 16px;
 }
 
 .btnFiltro {
-    background-color: #0B1120;
+    background-color: rgb(11, 17, 32);
     border-width: 1px;
-    border-color: #2A3A5C;
+    border-color: rgb(42, 58, 92);
     border-radius: 10px;
-    color: #E2E8F0;
-    font-size: 13px;
+    color: rgb(226, 232, 240);
+    font-size: 16px;
     padding: 8px;
     margin: 8px 0;
     -unity-text-align: middle-left;
 }
 
-.popup {
+/* ========== POPUP DE CRIMES (atual) ========== */
+.crime-popup {
     position: absolute;
-    top: 100px;
-    left: 40px;
-    background-color: #1A253C;
+    background-color: rgb(26, 37, 60);
     border-width: 1px;
-    border-color: #2A3A5C;
+    border-color: rgb(42, 58, 92);
     border-radius: 12px;
     padding: 12px;
-    width: 340px;
-    max-height: 460px;
-    flex-direction: column;
-    overflow: hidden;
+    width: 280px;
+    font-size: 16px;
 }
 
-
-
-
-.popupHeader {
+.popup-header {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
-.popupTitle {
+.popup-title {
     color: white;
-    font-size: 14px;
+    font-size: 16px;
     -unity-font-style: bold;
 }
 
-.closeBtn {
+.close-btn {
     background-color: transparent;
-    color: #B9C7DB;
+    color: rgb(185, 199, 219);
     font-size: 16px;
     border-width: 0;
 }
 
-.crimeList {
-    height: 300px;
-    margin-bottom: 12px;
-    flex-shrink: 0;
-    padding-right: 12px;  
+.crime-list {
+    max-height: 200px;
+    margin-bottom: 8px;
+    overflow: scroll;
 }
 
-
-
-
-.crimeList Toggle {
-    position: relative;
-    width: 100%;
-    min-height: 44px;
-    margin: 3px 0;
-    padding: 8px 50px 8px 4px;
-    align-items: center;   
-}
-
-
-
-
-.crimeList Toggle Label {
-    color: #E2E8F0;
-    font-size: 14px;
-    white-space: normal;
-    flex-grow: 1;
-    flex-shrink: 1;
-    max-width: 240px;
-}
-
-
-.crimeList Toggle > VisualElement {
-    position: absolute;
-    right: 30px;
-    top: 50%;
-    translate: 0 -50%;
-    width: 24px;
-    height: 24px;
-    flex-shrink: 0;
-    flex-grow: 0;
-}
-
-.crimeList Toggle .unity-toggle__checkmark {
-    width: 24px;
-    height: 24px;
-    -unity-background-scale-mode: scale-to-fit;
-    background-position-x: center;
-    background-position-y: center;
-    background-repeat: no-repeat;
-}
-
-
-.popupFooter {
+.crime-buttons-container {
     flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 8px;
-    flex-shrink: 0;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
 }
 
-
-/* Largura total do scroller */
-.crimeList .unity-scroller--vertical {
-    width: 6px;
+.crime-button {
+    background-color: rgb(42, 58, 92);
+    color: rgb(226, 232, 240);
+    border-width: 1px;
+    border-color: rgb(31, 42, 68);
+    border-radius: 20px;
+    padding: 4px 10px;
+    margin: 4px;
+    font-size: 16px;
+    -unity-text-align: middle-center;
+    white-space: normal;
 }
 
-/* O TRILHO de fundo (esse cinzão feio) - deixa transparente */
-.crimeList .unity-scroller--vertical .unity-base-slider {
-    background-color: transparent;
+.crime-button-selected {
+    background-color: rgb(59, 130, 246);
+    color: white;
+    border-color: rgb(96, 165, 250);
 }
 
-.crimeList .unity-scroller--vertical .unity-base-slider__tracker {
-    background-color: transparent;
-    border-width: 0;
+.popup-footer {
+    flex-direction: column;
+    margin-top: 6px;
 }
 
-.crimeList .unity-scroller--vertical #unity-dragger {
-    background-color: rgba(255, 255, 255, 0.25);
-    border-radius: 3px;
-    width: 6px;
-    border-width: 0;
-    margin-left: 0;
+.selected-count {
+    color: rgb(139, 157, 195);
+    font-size: 16px;
+    margin-bottom: 6px;
 }
 
-
-/* Esconde as setinhas */
-.crimeList .unity-scroller__low-button,
-.crimeList .unity-scroller__high-button {
-    display: none;
+.popup-buttons {
+    flex-direction: row;
+    justify-content: flex-end;
+    flex-wrap: wrap;
 }
 
-
-
-.selectedCountLabel {
-    color: #8B9DC3;
-    font-size: 11px;
-}
-
-.popupButton {
-    background-color: #2A3A5C;
+.popup-btn {
+    background-color: rgb(42, 58, 92);
     color: white;
     border-radius: 8px;
-    padding: 7px 16px;  
-    font-size: 12px;    
+    padding: 4px 10px;
+    font-size: 16px;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 4px;
 }
 
-
-.popupButtonPrimary {
-    background-color: #22C55E;  
-    color: #052e16;           
-    -unity-font-style: bold;     
+.popup-btn-primary {
+    background-color: rgb(74, 222, 128);
+    color: rgb(10, 15, 28);
 }
 
+/* ========== DROPDOWN DE ANO ========== */
 .dataRange {
     flex-direction: row;
     align-items: center;
     margin-bottom: 8px;
 }
 
-
-
-
-/* Container que coloca os campos LADO A LADO */
-.dateRow {
-    flex-direction: row;
-    justify-content: space-between;
-    margin-bottom: 12px;
-}
-
-/* Cada campo de data */
 .dateField {
-    background-color: #0B1120;
-    border-width: 1px;
-    border-color: #2A3A5C;
-    border-radius: 8px;
-    height: 36px;
     flex-grow: 1;
-    margin-right: 8px;
+    background-color: rgb(11, 17, 32);
+    border-width: 1px;
+    border-color: rgb(42, 58, 92);
+    border-radius: 8px;
+    padding: 4px;
+    margin-right: 4px;
+    min-width: 100px;
 }
 
-/* Garante que o cursor pisque e o campo seja clicável */
-.dateField .unity-base-text-field__input {
-    background-color: transparent;
-    border-width: 0;
-    color: #E2E8F0;
-    font-size: 14px;
-    -unity-text-align: middle-center;
-    cursor: text;
-}
-
-/* Borda destacada ao focar (ajuda a ver que tá ativo) */
-.dateField:focus {
-    border-color: #4ADE80;
-}
-
-.anoDropdown {
-    width: 110px;
-    min-width: 110px;
-    flex-shrink: 0;        /* ⬅️ impede o campo de encolher na linha */
-}
-
-.anoDropdown .unity-base-popup-field__input {
-    background-color: rgba(0, 0, 0, 0);
-    border-width: 0;
+.dateField .unity-base-dropdown-field__label {
     color: rgb(255, 255, 255);
-    white-space: nowrap;
-    padding-left: 4px;
-    padding-right: 4px;    /* ⬅️ voltei pra pouco padding */
+    font-size: 16px;
+    padding: 4px 8px;
 }
 
-.anoDropdown .unity-base-popup-field__arrow {
-    -unity-background-image-tint-color: rgb(255, 255, 255);
+.dateField .unity-base-dropdown-field__input {
+    color: rgb(255, 255, 255);
+    font-size: 16px;
 }
 
+.dateField .unity-popup-field__input {
+    max-height: 200px;
+    overflow: scroll;
+    background-color: rgb(26, 37, 60);
+    border-width: 1px;
+    border-color: rgb(42, 58, 92);
+}
 
+.dateField .unity-popup-field__input .unity-list-view__item {
+    color: rgb(226, 232, 240);
+    font-size: 16px;
+    padding: 4px 8px;
+    white-space: normal;
+    background-color: rgb(26, 37, 60);
+}
 
-
-
+.dateField .unity-popup-field__input .unity-list-view__item:hover {
+    background-color: rgb(42, 58, 92);
+}
 
 .btnAplicar {
-    background-color: #2A3A5C;
+    background-color: rgb(42, 58, 92);
     color: white;
     border-radius: 8px;
     padding: 4px 8px;
-    font-size: 11px;
+    font-size: 16px;
+    flex-shrink: 0;
 }
 
-.cardLegend {
-    background-color: #0F1622;
+/* ========== DROPDOWN DE ESTADO ========== */
+.mapHeader {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.mapTitleWrap {
+    flex-grow: 1;
+}
+
+.mapActions {
+    flex-direction: row;
+    align-items: center;
+    margin-left: auto;
+    min-width: 200px;
+}
+
+.estadoDropdown {
+    background-color: rgb(11, 17, 32);
     border-width: 1px;
-    border-color: #1F2A44;
+    border-color: rgb(42, 58, 92);
+    border-radius: 8px;
+    min-width: 150px;
+    font-size: 14px;
+    color: white;
+}
+
+.estadoDropdown .unity-base-dropdown-field__label {
+    color: rgb(74, 222, 128);
+    font-size: 14px;
+    -unity-font-style: bold;
+    padding: 6px 8px;
+}
+
+.estadoDropdown .unity-base-dropdown-field__input {
+    background-color: rgb(11, 17, 32);
+    border-radius: 8px;
+    padding: 6px 8px;
+    color: rgb(245, 245, 245);
+    font-size: 14px;
+}
+
+.estadoDropdown .unity-base-popup-field__arrow {
+    -unity-background-image-tint-color: rgb(74, 222, 128);
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+
+.estadoDropdown .unity-popup-field__input {
+    background-color: rgb(26, 37, 60);
+    border-width: 1px;
+    border-color: rgb(42, 58, 92);
+    border-radius: 8px;
+    max-height: 250px;
+    overflow: scroll;
+}
+
+.estadoDropdown .unity-popup-field__input .unity-list-view__item {
+    color: rgb(226, 232, 240);
+    font-size: 14px;
+    padding: 8px 12px;
+    background-color: rgb(26, 37, 60);
+    white-space: normal;
+}
+
+.estadoDropdown .unity-popup-field__input .unity-list-view__item:hover {
+    background-color: rgb(42, 58, 92);
+}
+
+/* ========== LEGENDA ========== */
+.cardLegend {
+    background-color: rgb(15, 22, 34);
+    border-width: 1px;
+    border-color: rgb(31, 42, 68);
     border-radius: 12px;
     padding: 12px;
     margin-top: 20px;
@@ -369,12 +375,13 @@ Label {
     justify-content: space-between;
 }
 
+/* ========== MAPA ========== */
 .mapContainer {
     flex-grow: 1;
-    background-color: #0B1120;
+    background-color: rgb(11, 17, 32);
     border-radius: 16px;
     border-width: 1px;
-    border-color: #1F2A44;
+    border-color: rgb(31, 42, 68);
     padding: 8px;
     position: relative;
 }
@@ -391,6 +398,7 @@ Label {
     height: 100%;
 }
 
+/* ========== CARD DE ESTADO ========== */
 .stateCard {
     position: absolute;
     left: 12px;
@@ -398,14 +406,14 @@ Label {
     background-color: rgba(11, 17, 32, 0.9);
     border-radius: 16px;
     border-width: 1px;
-    border-color: #2A3A5C;
+    border-color: rgb(42, 58, 92);
     padding: 12px;
     width: 240px;
 }
 
 .stateHead {
-    color: #4ADE80;
-    font-size: 10px;
+    color: rgb(74, 222, 128);
+    font-size: 16px;
 }
 
 .stateTitle {
@@ -422,8 +430,9 @@ Label {
 }
 
 .riskBadge {
-    color: #F97316;
+    color: rgb(249, 115, 22);
     -unity-font-style: bold;
+    font-size: 16px;
 }
 
 .stateValue {
@@ -432,18 +441,75 @@ Label {
     -unity-font-style: bold;
 }
 
+/* ========== RESUMO ========== */
 .kpiCard {
-    background-color: #0B1120;
+    background-color: rgb(11, 17, 32);
     border-width: 1px;
-    border-color: #1F2A44;
+    border-color: rgb(31, 42, 68);
     border-radius: 14px;
     padding: 12px;
-    margin-bottom: 12px;
+    margin: 5px;
+    flex-grow: 1;
 }
 
 .valor {
     color: white;
-    font-size: 28px;
+    font-size: 24px;
     -unity-font-style: bold;
     margin-top: 4px;
+}
+
+/* ========== ESTILOS ADICIONAIS (dropdowns e scroll) ========== */
+.estadoDropdown .unity-popup-field__input {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.estadoDropdown .unity-popup-field__input .unity-list-view__item,
+.estadoDropdown .unity-base-dropdown_item {
+    white-space: normal;
+    max-width: 100%;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.unity-base-dropdown__item {
+    white-space: normal;
+    overflow: hidden;
+}
+
+.unity-popup-field__label {
+    min-width: auto;
+    color: #FFFFFF;
+    align-self: center;
+}
+
+DropdownField .unity-base-popup-field__text {
+    color: #fff;
+}
+
+DropdownField .unity-base-popup-field__arrow {
+    -unity-background-image-tint-color: rgb(74, 222, 128);
+}
+
+DropdownField Label {
+    padding: 5px;
+    font-size: 16px;
+}
+
+/* Scrollbars personalizadas */
+Scroller .unity-repeat-button {
+    background-color: #1F2D4C;
+    border-color: #1F2D4C;
+    -unity-background-image-tint-color: rgb(74, 222, 128);
+}
+
+Scroller .unity-base-slider__tracker {
+    background-color: #1F2D4C;
+    border-color: #1F2D4C;
+}
+
+Scroller .unity-base-slider__dragger {
+    background-color: #4ADE80;
+    width: 100%;
 }

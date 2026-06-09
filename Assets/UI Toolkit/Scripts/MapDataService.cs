@@ -15,265 +15,189 @@ public static class MapDataService
         public float percentual;
     }
 
+    // ====================================================================
+    // Mapa de calor – suporta filtros de crime e ano
+    // ====================================================================
     public static IEnumerator GetOccurrencesByState(string restUrl, string key,
-        List<int> crimeIds, DateTime? dataInicio, DateTime? dataFim,
+        List<int> crimeIds, int? ano,
         Action<List<StateData>> onComplete)
     {
-        string resourcePath = "vw_ocorrencias_estado?select=estado,total";
-        Debug.Log($"[MapDataService] Query: {restUrl}{resourcePath}");
+        bool hasCrime = crimeIds != null && crimeIds.Count > 0 && crimeIds.Count < 20;
+        bool hasYear = ano.HasValue;
+        string query = "";   // declarado uma única vez
+
+        // Sem filtros → view agregada rápida
+        if (!hasCrime && !hasYear)
+        {
+            query = "vw_ocorrencias_estado?select=estado,total";
+            Debug.Log($"[MapDataService] Mapa (agregado): {restUrl}{query}");
+            bool done = false;
+            List<StateData> result = new List<StateData>();
+            yield return SupabaseRestClient.Get(restUrl, key, query, (status, body, err) =>
+            {
+                if (string.IsNullOrEmpty(err)) result = ParseStateTotals(body);
+                else Debug.LogError($"Erro: {err}");
+                done = true;
+            });
+            yield return new WaitUntil(() => done);
+            int total = result.Sum(x => x.ocorrencias);
+            if (total > 0) foreach (var s in result) s.percentual = (float)s.ocorrencias / total;
+            onComplete?.Invoke(result);
+            yield break;
+        }
+
+        // Com filtros → usar vw_estado_crime_mesano
+        var filters = new List<string>();
+        if (hasCrime) filters.Add($"id_crime=in.({string.Join(",", crimeIds)})");
+        if (hasYear) filters.Add($"ano=eq.{ano.Value}");
+        string filterStr = filters.Count > 0 ? "&" + string.Join("&", filters) : "";
+        query = $"vw_estado_crime_mesano?select=estado,total{filterStr}";
+        Debug.Log($"[MapDataService] Mapa (filtrado): {restUrl}{query}");
 
         bool completed = false;
-        List<StateData> result = new List<StateData>();
-
-        yield return SupabaseRestClient.Get(restUrl, key, resourcePath, (status, body, err) =>
+        List<StateData> raw = new List<StateData>();
+        yield return SupabaseRestClient.Get(restUrl, key, query, (status, body, err) =>
         {
-            if (!string.IsNullOrEmpty(err))
-            {
-                Debug.LogError($"[MapDataService] Erro: {err} (HTTP {status})");
-                result = GetMockStateData();
-            }
-            else
-            {
-                result = ParseStateCounts(body);
-                Debug.Log($"[MapDataService] Estados retornados: {result.Count}");
-                foreach (var s in result) Debug.Log($"  {s.nome}: {s.ocorrencias}");
-            }
+            if (string.IsNullOrEmpty(err)) raw = ParseStateTotals(body);
+            else Debug.LogError($"Erro: {err}");
             completed = true;
         });
         yield return new WaitUntil(() => completed);
-
-        int total = result.Sum(x => x.ocorrencias);
-        if (total > 0)
-            foreach (var s in result) s.percentual = (float)s.ocorrencias / total;
-
-        onComplete?.Invoke(result);
+        var grouped = raw.GroupBy(s => s.nome).Select(g => new StateData { nome = g.Key, ocorrencias = g.Sum(x => x.ocorrencias) }).ToList();
+        int total2 = grouped.Sum(g => g.ocorrencias);
+        if (total2 > 0) foreach (var g in grouped) g.percentual = (float)g.ocorrencias / total2;
+        onComplete?.Invoke(grouped);
     }
 
+    // ====================================================================
+    // Resumo geral – suporta filtros de crime e ano
+    // ====================================================================
     public static IEnumerator GetGeneralSummary(string restUrl, string key,
-        List<int> crimeIds, DateTime? dataInicio, DateTime? dataFim,
+        List<int> crimeIds, int? ano,
         Action<int, string> onComplete)
     {
-        // Essa view JÁ vem com a coluna "total" agregada
-        string resourcePath = "vw_ocorrencias_crime?select=crime,total";
-        Debug.Log($"[MapDataService] Resumo: {resourcePath}");
+        bool hasCrime = crimeIds != null && crimeIds.Count > 0 && crimeIds.Count < 20;
+        bool hasYear = ano.HasValue;
+        string query = "";
+
+        if (!hasCrime && !hasYear)
+        {
+            query = "vw_ocorrencias_crime?select=crime,total";
+            Debug.Log($"[MapDataService] Resumo (agregado): {restUrl}{query}");
+            bool done = false;
+            int total = 0;
+            string top = "Nenhum";
+            yield return SupabaseRestClient.Get(restUrl, key, query, (status, body, err) =>
+            {
+                if (string.IsNullOrEmpty(err))
+                {
+                    var crimes = ParseCrimeTotals(body);
+                    total = crimes.Values.Sum();
+                    if (crimes.Count > 0) top = crimes.OrderByDescending(x => x.Value).First().Key;
+                }
+                else Debug.LogError($"Erro: {err}");
+                done = true;
+            });
+            yield return new WaitUntil(() => done);
+            onComplete?.Invoke(total, top);
+            yield break;
+        }
+
+        var filters = new List<string>();
+        if (hasCrime) filters.Add($"id_crime=in.({string.Join(",", crimeIds)})");
+        if (hasYear) filters.Add($"ano=eq.{ano.Value}");
+        string filterStr = filters.Count > 0 ? "&" + string.Join("&", filters) : "";
+        query = $"vw_crime_mesano?select=crime,total{filterStr}";
+        Debug.Log($"[MapDataService] Resumo (filtrado): {restUrl}{query}");
 
         bool completed = false;
-        int total = 0;
-        string topCrime = "";
-
-        yield return SupabaseRestClient.Get(restUrl, key, resourcePath, (status, body, err) =>
+        int total2 = 0;
+        string top2 = "Nenhum";
+        yield return SupabaseRestClient.Get(restUrl, key, query, (status, body, err) =>
         {
             if (string.IsNullOrEmpty(err))
             {
-                var crimes = ParseCrimeCounts(body); // usa "total" pronto da view
-                total = crimes.Values.Sum();
-                if (crimes.Count > 0)
-                    topCrime = crimes.OrderByDescending(x => x.Value).First().Key;
-                Debug.Log($"[MapDataService] Resumo: total={total}, topCrime={topCrime}");
+                var crimes = ParseCrimeTotals(body);
+                total2 = crimes.Values.Sum();
+                if (crimes.Count > 0) top2 = crimes.OrderByDescending(x => x.Value).First().Key;
             }
-            else
-            {
-                Debug.LogError($"Erro resumo: {err}");
-                total = 0;
-                topCrime = "-";
-            }
+            else Debug.LogError($"Erro: {err}");
             completed = true;
         });
         yield return new WaitUntil(() => completed);
-        onComplete?.Invoke(total, topCrime);
+        onComplete?.Invoke(total2, top2);
     }
 
-    public static IEnumerator GetStateDetails(string restUrl, string key, int stateId,
-        List<int> crimeIds, DateTime? dataInicio, DateTime? dataFim,
+    // ====================================================================
+    // Detalhes de um estado (para o card ao clicar) – recebe o nome do estado
+    // ====================================================================
+    public static IEnumerator GetStateDetailsByName(string restUrl, string key, string estadoNome,
+        List<int> crimeIds, int? ano,
         Action<int, string, string> onComplete)
     {
-        var filters = new List<string> { $"id_estado=eq.{stateId}" };
-
-        if (crimeIds != null && crimeIds.Count > 0)
-            filters.Add($"id_crime=in.({string.Join(",", crimeIds)})");
-        if (dataInicio.HasValue)
-            filters.Add($"data_hora=gte.{dataInicio.Value:yyyy-MM-dd}");
-        if (dataFim.HasValue)
-            filters.Add($"data_hora=lte.{dataFim.Value:yyyy-MM-dd}");
-
+        var filters = new List<string> { $"estado=eq.{Uri.EscapeDataString(estadoNome)}" };
+        if (crimeIds != null && crimeIds.Count > 0 && crimeIds.Count < 20) filters.Add($"id_crime=in.({string.Join(",", crimeIds)})");
+        if (ano.HasValue) filters.Add($"ano=eq.{ano.Value}");
         string filterStr = "&" + string.Join("&", filters);
-        string resourcePath = $"vw_ocorrencias?select=crime{filterStr}";
-
-        Debug.Log($"[MapDataService] Detalhes estado {stateId}: {resourcePath}");
+        string query = $"vw_estado_crime_mesano?select=crime,total{filterStr}";
+        Debug.Log($"[MapDataService] Detalhes {estadoNome}: {restUrl}{query}");
 
         bool completed = false;
         int total = 0;
-        string topCrime = "Nenhum";
-        string risk = "MÍNIMO";
-
-        yield return SupabaseRestClient.Get(restUrl, key, resourcePath, (status, body, err) =>
+        string top = "Nenhum";
+        string risk = "Mínimo";
+        yield return SupabaseRestClient.Get(restUrl, key, query, (status, body, err) =>
         {
-            // 1) Erro de rede / HTTP
-            if (!string.IsNullOrEmpty(err))
+            if (string.IsNullOrEmpty(err))
             {
-                Debug.LogError($"[MapDataService] Erro detalhes estado {stateId}: {err} (HTTP {status})");
-                total = 0;
-                topCrime = "-";
-                risk = "Sem dados";
-                completed = true;
-                return;
+                var crimes = ParseCrimeTotals(body);
+                total = crimes.Values.Sum();
+                if (crimes.Count > 0) top = crimes.OrderByDescending(x => x.Value).First().Key;
+                if (total > 50000) risk = "CRÍTICO";
+                else if (total > 20000) risk = "ALTO";
+                else if (total > 5000) risk = "MÉDIO";
+                else if (total > 1000) risk = "BAIXO";
+                else risk = "MÍNIMO";
             }
-
-            // 2) Body nulo/vazio (defensivo)
-            if (string.IsNullOrWhiteSpace(body))
-            {
-                Debug.LogWarning($"[MapDataService] Body vazio no estado {stateId}.");
-                total = 0;
-                topCrime = "Nenhum";
-                risk = "MÍNIMO";
-                completed = true;
-                return;
-            }
-
-            // 3) Array vazio "[]" → estado sem ocorrências. É SUCESSO.
-            string trimmed = body.Trim();
-            if (trimmed == "[]")
-            {
-                Debug.Log($"[MapDataService] Estado {stateId} sem ocorrências (array vazio).");
-                total = 0;
-                topCrime = "Nenhum";
-                risk = "MÍNIMO";
-                completed = true;
-                return;
-            }
-
-            // 4) Sucesso com dados → conta as linhas
-            var crimes = ParseCrimeRows(body);
-            total = crimes.Values.Sum();
-
-            if (crimes.Count > 0)
-                topCrime = crimes.OrderByDescending(x => x.Value).First().Key;
-            else
-                topCrime = "Nenhum";
-
-            risk = GetRiskLevel(total);
-
-            Debug.Log($"[MapDataService] Estado {stateId}: total={total}, topCrime={topCrime}, risco={risk}");
+            else Debug.LogError($"Erro: {err}");
             completed = true;
         });
-
         yield return new WaitUntil(() => completed);
-        onComplete?.Invoke(total, topCrime, risk);
+        onComplete?.Invoke(total, top, risk);
     }
 
-    // ===================================================================
-    // 🔎 LISTA DE CRIMES (pra popular o popup de filtro)
-    // ===================================================================
-    public static IEnumerator GetCrimes(string restUrl, string key,
-        Action<List<(int id, string nome)>> onComplete)
+    // ====================================================================
+    // Método de compatibilidade para scripts antigos (usa o nome do estado)
+    // ====================================================================
+    public static IEnumerator GetStateDetails(string restUrl, string key, int stateId,
+        List<int> crimeIds, int? ano,
+        Action<int, string, string> onComplete)
     {
-        string resourcePath = "vw_ocorrencias_crime?select=crime"; // ajuste se tiver tabela própria
-        Debug.Log($"[MapDataService] Buscando crimes: {resourcePath}");
-
-        bool completed = false;
-        List<(int, string)> result = new List<(int, string)>();
-
-        yield return SupabaseRestClient.Get(restUrl, key, resourcePath, (status, body, err) =>
-        {
-            if (!string.IsNullOrEmpty(err))
-            {
-                Debug.LogError($"[MapDataService] Erro ao buscar crimes: {err} (HTTP {status}). Usando lista fixa.");
-                result = GetCrimesFixos();
-            }
-            else
-            {
-                // Como a view não tem ID, usamos a lista fixa (que tem os IDs corretos)
-                result = GetCrimesFixos();
-                Debug.Log($"[MapDataService] {result.Count} crimes disponíveis (lista fixa).");
-            }
-            completed = true;
-        });
-
-        yield return new WaitUntil(() => completed);
-        onComplete?.Invoke(result);
+        Debug.LogError("GetStateDetails está obsoleto. Use GetStateDetailsByName passando o nome do estado.");
+        onComplete?.Invoke(0, "Erro", "Método obsoleto");
+        yield return null;
     }
 
-    // Lista fixa de crimes — IDs batem com id_crime da tabela vw_ocorrencias
-    private static List<(int id, string nome)> GetCrimesFixos()
-    {
-        return new List<(int, string)>
-        {
-            (1,  "Estupro"),
-            (2,  "Estupro de Vulnerável"),
-            (3,  "Feminicídio"),
-            (4,  "Furto a Transeunte"),
-            (5,  "Furto em Veículo"),
-            (6,  "Homicídio"),
-            (7,  "Latrocínio"),
-            (8,  "Lesão Corporal Seguida de Morte"),
-            (9,  "Localização de Veículo Furtado ou Roubado"),
-            (10, "Posse/Porte de Arma"),
-            (11, "Roubo a Transeunte"),
-            (12, "Roubo de Veículo"),
-            (13, "Roubo em Coletivo"),
-            (14, "Roubo em Comércio"),
-            (15, "Roubo em Residência"),
-            (16, "Tentativa de Feminicídio"),
-            (17, "Tentativa de Homicídio"),
-            (18, "Tentativa de Latrocínio"),
-            (19, "Tráfico de Drogas"),
-            (20, "Uso e Porte de Drogas"),
-        };
-    }
-
-    // Parser para views que JÁ trazem "total" agregado
-    private static List<StateData> ParseStateCounts(string json)
+    // ====================================================================
+    // Parsers
+    // ====================================================================
+    private static List<StateData> ParseStateTotals(string json)
     {
         var list = new List<StateData>();
-        if (string.IsNullOrEmpty(json)) return list;
-        MatchCollection matches = Regex.Matches(json, "\"estado\"\\s*:\\s*\"([^\"]+)\".*?\"total\"\\s*:\\s*(\\d+)");
-        foreach (Match m in matches)
-            if (int.TryParse(m.Groups[2].Value, out int count))
-                list.Add(new StateData { nome = m.Groups[1].Value, ocorrencias = count });
+        var pattern = @"""estado""\s*:\s*""([^""]+)""\s*,\s*""total""\s*:\s*(\d+)";
+        foreach (Match m in Regex.Matches(json, pattern))
+            if (int.TryParse(m.Groups[2].Value, out int total))
+                list.Add(new StateData { nome = m.Groups[1].Value, ocorrencias = total });
         return list;
     }
 
-    // Parser para views que JÁ trazem "total" agregado (ex: vw_ocorrencias_crime)
-    private static Dictionary<string, int> ParseCrimeCounts(string json)
+    private static Dictionary<string, int> ParseCrimeTotals(string json)
     {
         var dict = new Dictionary<string, int>();
-        if (string.IsNullOrEmpty(json)) return dict;
-        MatchCollection matches = Regex.Matches(json, "\"crime\"\\s*:\\s*\"([^\"]+)\".*?\"total\"\\s*:\\s*(\\d+)");
-        foreach (Match m in matches)
-            if (int.TryParse(m.Groups[2].Value, out int count))
-                dict[m.Groups[1].Value] = count;
+        var pattern = @"""crime""\s*:\s*""([^""]+)""\s*,\s*""total""\s*:\s*(\d+)";
+        foreach (Match m in Regex.Matches(json, pattern))
+            if (int.TryParse(m.Groups[2].Value, out int total))
+                dict[m.Groups[1].Value] = dict.GetValueOrDefault(m.Groups[1].Value) + total;
         return dict;
-    }
-
-    // Parser para quando NÃO há agregação: conta quantas linhas tem de cada crime
-    private static Dictionary<string, int> ParseCrimeRows(string json)
-    {
-        var dict = new Dictionary<string, int>();
-        if (string.IsNullOrEmpty(json)) return dict;
-
-        MatchCollection matches = Regex.Matches(json, "\"crime\"\\s*:\\s*\"([^\"]+)\"");
-        foreach (Match m in matches)
-        {
-            string nome = m.Groups[1].Value;
-            dict[nome] = dict.ContainsKey(nome) ? dict[nome] + 1 : 1;
-        }
-        return dict;
-    }
-
-    private static string GetRiskLevel(int total)
-    {
-        if (total > 50000) return "CRÍTICO";
-        if (total > 20000) return "ALTO";
-        if (total > 5000) return "MÉDIO";
-        if (total > 1000) return "BAIXO";
-        return "MÍNIMO";
-    }
-
-    private static List<StateData> GetMockStateData()
-    {
-        return new List<StateData>
-        {
-            new StateData { nome = "Distrito Federal", ocorrencias = 4111 }
-        };
     }
 }
