@@ -33,6 +33,17 @@
                         <ui:Label text="Alto" class="textoSec"/>
                     </ui:VisualElement>
                 </ui:VisualElement>
+
+                <!-- Exportação -->
+                <ui:VisualElement class="cardExport">
+                    <ui:Label text="EXPORTAR DADOS" class="subtitulo"/>
+                    <ui:Label text="Baixe os dados atuais (filtros aplicados)" class="textoSec"/>
+                    <ui:TextField name="FileNameField" label="Nome do arquivo" value="ocorrencias" class="textFieldExport" />
+                    <ui:VisualElement style="flex-direction: row; gap: 8px; margin-top: 8px;">
+                        <ui:Button name="ExportExcelBtn" text="Salvar como Excel" class="btnExport"/>
+                        <ui:Button name="ExportCsvBtn" text="Salvar como CSV" class="btnExport"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
             </ui:VisualElement>
 
             <!-- Mapa -->
@@ -78,7 +89,7 @@
                 <ui:Instance template="GraficoPizza"/>
                 <ui:VisualElement style="margin-top: 16px;">
                     <ui:Label text="EVOLUÇÃO MENSAL" class="subtitulo" style="margin-bottom: 8px;"/>
-                    <ui:VisualElement name="LineChartContainer" style="height: 220px;"/>
+                    <ui:VisualElement name="LineChartContainer" style="height: 220px; background-color: #0f0f1a; border-radius: 8px; overflow: hidden;"/>
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

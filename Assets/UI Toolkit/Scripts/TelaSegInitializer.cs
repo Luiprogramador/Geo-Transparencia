@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -23,6 +25,8 @@ public class TelaSegInitializer : MonoBehaviour
     private Button aplicarPeriodoBtn;
     private Label totalCrimesLabel, topCrimeLabel;
     private Label stateTitle, riskBadge, stateValue;
+    private Button exportExcelBtn, exportCsvBtn;
+    private TextField fileNameField;
 
     private VisualElement crimePopup;
     private ScrollView crimeListContainer;
@@ -49,17 +53,14 @@ public class TelaSegInitializer : MonoBehaviour
         uiDoc = GetComponent<UIDocument>();
         root = uiDoc.rootVisualElement;
 
-        // Inicializa gráfico de pizza
         pieChartController = new PieChartController(uiDoc, this, supabaseRestUrl, supabasePublishableKey);
 
-        // Inicializa gráfico de linhas (container deve existir no UXML)
         var lineContainer = root.Q<VisualElement>("LineChartContainer");
         if (lineContainer != null)
             lineChartController = new LineChartController(lineContainer);
         else
-            Debug.LogError("LineChartContainer não encontrado! Adicione um VisualElement com name='LineChartContainer' no resumo.");
+            Debug.LogError("LineChartContainer não encontrado!");
 
-        // Elementos da UI
         crimeButton = root.Q<Button>("CrimeButton");
         anoDropdown = root.Q<DropdownField>("AnoDropdown");
         aplicarPeriodoBtn = root.Q<Button>("AplicarPeriodoBtn");
@@ -68,6 +69,16 @@ public class TelaSegInitializer : MonoBehaviour
         stateTitle = root.Q<Label>("stateTitle");
         riskBadge = root.Q<Label>("riskBadge");
         stateValue = root.Q<Label>("stateValue");
+
+        fileNameField = root.Q<TextField>("FileNameField");
+        if (fileNameField != null && string.IsNullOrEmpty(fileNameField.value))
+            fileNameField.value = "ocorrencias";
+
+        exportExcelBtn = root.Q<Button>("ExportExcelBtn");
+        exportCsvBtn = root.Q<Button>("ExportCsvBtn");
+
+        if (exportExcelBtn != null) exportExcelBtn.clicked += () => ExportData("excel");
+        if (exportCsvBtn != null) exportCsvBtn.clicked += () => ExportData("csv");
 
         ConfigureAnoDropdown();
 
@@ -255,7 +266,6 @@ public class TelaSegInitializer : MonoBehaviour
     private IEnumerator SetupMapImages()
     {
         yield return new WaitForSeconds(0.1f);
-        // Não precisa registrar cliques, o MapClickController já faz
     }
 
     private void OnEstadoSelecionadoNoMapa(string estadoNome)
@@ -366,5 +376,182 @@ public class TelaSegInitializer : MonoBehaviour
         pieChartController.selectedCrimeIds = new List<int>(activeSelectedIds);
         pieChartController.selectedAno = selectedAno;
         pieChartController.Refresh();
+    }
+
+    // ========== EXPORTAÇÃO ==========
+    private string GetDownloadsFolder()
+    {
+        string downloads = "";
+#if UNITY_STANDALONE_WIN
+        downloads = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+#elif UNITY_STANDALONE_OSX
+        downloads = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+#elif UNITY_STANDALONE_LINUX
+        downloads = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+#elif UNITY_ANDROID
+        downloads = Application.persistentDataPath;
+#elif UNITY_IOS
+        downloads = Application.persistentDataPath;
+#else
+        downloads = Application.persistentDataPath;
+#endif
+        if (!Directory.Exists(downloads))
+            Directory.CreateDirectory(downloads);
+        return downloads;
+    }
+
+    private string SanitizeFileName(string name)
+    {
+        char[] invalidChars = Path.GetInvalidFileNameChars();
+        return string.Join("_", name.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    private void ExportData(string format)
+    {
+        StartCoroutine(ExportDataCoroutine(format));
+    }
+
+    private IEnumerator ExportDataCoroutine(string format)
+    {
+        var filters = new List<string>();
+        if (activeSelectedIds != null && activeSelectedIds.Count > 0 && activeSelectedIds.Count < 20)
+            filters.Add($"id_crime=in.({string.Join(",", activeSelectedIds)})");
+        if (selectedAno.HasValue)
+            filters.Add($"ano=eq.{selectedAno.Value}");
+        if (!string.IsNullOrEmpty(selectedEstado))
+            filters.Add($"estado=eq.{Uri.EscapeDataString(selectedEstado)}");
+
+        string filterStr = filters.Count > 0 ? "&" + string.Join("&", filters) : "";
+        string query = $"vw_ocorrencias?select=*{filterStr}";
+
+        Debug.Log($"[Export] Buscando dados: {supabaseRestUrl}{query}");
+
+        bool completed = false;
+        string jsonData = "";
+        yield return SupabaseRestClient.Get(supabaseRestUrl, supabasePublishableKey, query, (status, body, err) =>
+        {
+            if (string.IsNullOrEmpty(err))
+                jsonData = body;
+            else
+                Debug.LogError($"Erro na exportação: {err}");
+            completed = true;
+        });
+        yield return new WaitUntil(() => completed);
+
+        if (string.IsNullOrEmpty(jsonData) || jsonData == "[]")
+        {
+            ShowExportNotification("Nenhum dado encontrado.");
+            yield break;
+        }
+
+        var records = ParseJsonToRecords(jsonData);
+        if (records.Count == 0)
+        {
+            ShowExportNotification("Nenhum dado encontrado.");
+            yield break;
+        }
+
+        string fileContent;
+        string extension;
+        if (format == "csv")
+        {
+            fileContent = ConvertToCsv(records);
+            extension = "csv";
+        }
+        else
+        {
+            fileContent = ConvertToHtmlTable(records);
+            extension = "xls";
+        }
+
+        string baseName = string.IsNullOrEmpty(fileNameField?.value) ? "ocorrencias" : fileNameField.value;
+        string safeName = SanitizeFileName(baseName);
+        string fileName = $"{safeName}_{DateTime.Now:yyyyMMdd_HHmmss}.{extension}";
+        string savePath = Path.Combine(GetDownloadsFolder(), fileName);
+
+        try
+        {
+            Encoding utf8WithBom = new UTF8Encoding(true);
+            File.WriteAllText(savePath, fileContent, utf8WithBom);
+            ShowExportNotification($"Arquivo salvo em: {savePath}");
+            Debug.Log($"Exportado: {savePath}");
+        }
+        catch (Exception e)
+        {
+            ShowExportNotification($"Erro ao salvar: {e.Message}");
+            Debug.LogError($"Erro na exportação: {e}");
+        }
+    }
+
+    private List<Dictionary<string, string>> ParseJsonToRecords(string json)
+    {
+        var list = new List<Dictionary<string, string>>();
+        json = json.Trim();
+        if (json.StartsWith("[")) json = json.Substring(1, json.Length - 2);
+        var objectPattern = @"\{([^{}]*)\}";
+        foreach (Match match in Regex.Matches(json, objectPattern))
+        {
+            var dict = new Dictionary<string, string>();
+            string obj = match.Groups[1].Value;
+            var pairPattern = "\"([^\"]+)\"\\s*:\\s*\"([^\"]*)\"";
+            foreach (Match p in Regex.Matches(obj, pairPattern))
+                dict[p.Groups[1].Value] = p.Groups[2].Value;
+            var numPattern = "\"([^\"]+)\"\\s*:\\s*(\\d+)";
+            foreach (Match p in Regex.Matches(obj, numPattern))
+                dict[p.Groups[1].Value] = p.Groups[2].Value;
+            if (dict.Count > 0)
+                list.Add(dict);
+        }
+        return list;
+    }
+
+    private string ConvertToCsv(List<Dictionary<string, string>> records)
+    {
+        if (records.Count == 0) return "";
+        var sb = new StringBuilder();
+        sb.AppendLine(string.Join(";", records[0].Keys));
+        foreach (var rec in records)
+        {
+            var values = rec.Values.Select(v => v.Contains(";") ? $"\"{v}\"" : v);
+            sb.AppendLine(string.Join(";", values));
+        }
+        return sb.ToString();
+    }
+
+    private string ConvertToHtmlTable(List<Dictionary<string, string>> records)
+    {
+        if (records.Count == 0) return "<html><body><p>Sem dados</p></body></html>";
+        var sb = new StringBuilder();
+        sb.AppendLine("<html><head><meta charset='UTF-8'><title>Ocorrências</title></head><body>");
+        sb.AppendLine("<table border='1' cellpadding='5' cellspacing='0'>");
+        sb.AppendLine("<tr>");
+        foreach (var key in records[0].Keys)
+            sb.AppendLine($"<th>{key}</th>");
+        sb.AppendLine("</td>");
+        foreach (var rec in records)
+        {
+            sb.AppendLine("<tr>");
+            foreach (var val in rec.Values)
+                sb.AppendLine($"<td>{val}</td>");
+            sb.AppendLine("</tr>");
+        }
+        sb.AppendLine("表</body></html>");
+        return sb.ToString();
+    }
+
+    private void ShowExportNotification(string message)
+    {
+        var notify = new Label(message);
+        notify.style.position = Position.Absolute;
+        notify.style.bottom = 20;
+        notify.style.right = 20;
+        notify.style.backgroundColor = new Color(0, 0, 0, 0.8f);
+        notify.style.color = Color.white;
+        notify.style.paddingLeft = 12;
+        notify.style.paddingRight = 12;
+        notify.style.paddingTop = 6;
+        notify.style.paddingBottom = 6;
+        root.Add(notify);
+        root.schedule.Execute(() => notify.RemoveFromHierarchy()).ExecuteLater(3000);
     }
 }

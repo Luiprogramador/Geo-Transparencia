@@ -306,13 +306,13 @@ Label {
     border-color: rgb(42, 58, 92);
     border-radius: 8px;
     min-width: 150px;
-    font-size: 14px;
+    font-size: 16px;
     color: white;
 }
 
 .estadoDropdown .unity-base-dropdown-field__label {
     color: rgb(74, 222, 128);
-    font-size: 14px;
+    font-size: 16px;
     -unity-font-style: bold;
     padding: 6px 8px;
 }
@@ -322,7 +322,7 @@ Label {
     border-radius: 8px;
     padding: 6px 8px;
     color: rgb(245, 245, 245);
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .estadoDropdown .unity-base-popup-field__arrow {
@@ -343,7 +343,7 @@ Label {
 
 .estadoDropdown .unity-popup-field__input .unity-list-view__item {
     color: rgb(226, 232, 240);
-    font-size: 14px;
+    font-size: 16px;
     padding: 8px 12px;
     background-color: rgb(26, 37, 60);
     white-space: normal;
@@ -525,4 +525,98 @@ Scroller .unity-base-slider__dragger {
 /* Estilo dos rótulos do gráfico */
 .unity-text-element {
     -unity-text-align: middle-center;
+}
+
+/* ========== EXPORTAÇÃO ========== */
+.cardExport {
+    background-color: rgb(15, 22, 34);
+    border-width: 1px;
+    border-color: rgb(31, 42, 68);
+    border-radius: 12px;
+    padding: 12px;
+    margin-top: 16px;
+}
+
+.textFieldExport {
+    background-color: rgb(11, 17, 32);
+    border-width: 1px;
+    border-color: rgb(42, 58, 92);
+    border-radius: 8px;
+    padding: 4px;
+    margin: 8px 0;
+    color: white;
+}
+
+.textFieldExport .unity-text-field__label {
+    color: rgb(160, 176, 208);
+    font-size: 16px;
+}
+
+.textFieldExport .unity-text-field__input {
+    color: white;
+    font-size: 16px;
+}
+
+.btnExport {
+    background-color: rgb(42, 58, 92);
+    color: white;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 16px;
+    border-width: 0;
+    flex-grow: 1;
+    text-align: center;
+    transition: background-color 0.2s;
+}
+
+.btnExport:hover {
+    background-color: rgb(59, 130, 246);
+}
+
+.btnExportFolder {
+    background-color: rgb(31, 42, 68);
+    color: white;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-width: 0;
+    width: 100%;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.btnExportFolder:hover {
+    background-color: rgb(59, 130, 246);
+}
+
+/* Campo de texto para nome do arquivo */
+.textFieldExport {
+    background-color: rgb(11, 17, 32);
+    border-width: 1px;
+    border-color: rgb(42, 58, 92);
+    border-radius: 8px;
+    padding: 4px;
+    margin: 8px 0;
+    color: #000;
+}
+.textFieldExport .unity-text-field__label {
+    color: rgb(160, 176, 208);
+    font-size: 16px;
+}
+.textFieldExport .unity-text-field__input {
+    color: #000;
+    font-size: 16px;
+}
+.btnExport {
+    background-color: rgb(42, 58, 92);
+    color: white;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 16px;
+    border-width: 0;
+    flex-grow: 1;
+    text-align: center;
+}
+.btnExport:hover {
+    background-color: rgb(59, 130, 246);
 }
