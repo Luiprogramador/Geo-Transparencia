@@ -1,1 +1,62 @@
 @import url("unity-theme://default");
+
+ScrollView {
+    max-height: 200px;
+}
+.unity-popup-field__input .unity-base-dropdown_item {
+    white-space: normal;
+}
+
+.unity-scroll-view__content-container, .unity-base-dropdown__item, .unity-base-dropdown__item-content {
+    max-width: 97%;
+}
+
+.unity-base-dropdown__label {
+    white-space: normal
+}
+
+.unity-base-dropdown .unity-scroll-view {
+    background-color: #2C3F67;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.unity-scroller > .unity-scroller__high-button, .unity-scroller > .unity-scroller__low-button{
+    background-color: #1F2D4C;
+    border-color: #1F2D4C;
+    -unity-background-image-tint-color: rgb(74, 222, 128);
+
+}
+
+.unity-scroller > .unity-scroller__high-button:hover:enabled, .unity-scroller > .unity-scroller__low-button:hover:enabled{
+    background-color: #1F2D4C;
+    border-color: #1F2D4C;
+}
+
+.unity-scroller .unity-base-slider__tracker {
+    background-color: #1F2D4C;
+    border-color: #1F2D4C;
+}
+
+.unity-scroller .unity-base-slider__tracker:hover {
+    background-color: #223254;
+    border-color: #1F2D4C;
+}
+
+.unity-scroller .unity-base-slider__tracker:hover:enabled {
+    background-color: #223254;
+    border-color: #1F2D4C;
+}
+
+.unity-scroller .unity-base-slider__dragger {
+    background-color: #4ADE80;
+    width: 100%;
+}
+
+.unity-scroller .unity-base-slider__dragger:hover {
+    background-color: #47CC77;
+}
+
+.unity-scroller .unity-base-slider__dragger:hover:enabled {
+    background-color: #47CC77;
+}

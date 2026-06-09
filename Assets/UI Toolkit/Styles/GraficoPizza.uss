@@ -1,0 +1,71 @@
+.pizza-chart-container {
+    flex-direction: column;
+    background-color: #111827;
+    border-width: 1px;
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.chart-title {
+    color: white;
+    font-size: 18px;
+    -unity-font-style: bold;
+    margin-bottom: 16px;
+}
+
+.chart-canvas {
+    flex-grow: 1;
+    min-height: 200px;
+    background-color: #0B1120;
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+/* Estilos para o ScrollView da legenda */
+.legend-container {
+    max-height: 250px;
+    background-color: #0F1622;
+    border-radius: 12px;
+    padding: 8px;
+}
+
+/* Estiliza a barra de rolagem vertical (thumb e trilho) */
+.legend-container .unity-scroll-view__vertical-scroller {
+    width: 8px;
+}
+.legend-container .unity-scroller__vertical-tracker {
+    background-color: #1F2A44;
+    border-radius: 4px;
+}
+.legend-container .unity-scroller__vertical-slider {
+    background-color: #4ADE80;
+    border-radius: 4px;
+}
+.legend-container .unity-scroller__vertical-slider:hover {
+    background-color: #6EE787;
+}
+
+/* Espaçamento entre os itens da legenda (dentro do ScrollView) */
+.legend-item {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 8px;  /* espaço reduzido */
+    flex-wrap: wrap;
+}
+
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.legend-label {
+    color: #E2E8F0;
+    font-size: 16px;
+    white-space: normal;
+    flex: 1;
+}
